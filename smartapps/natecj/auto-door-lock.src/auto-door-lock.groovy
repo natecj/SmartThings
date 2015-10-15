@@ -11,6 +11,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+
 definition(
   name: "Auto Door Lock",
   namespace: "natecj",
@@ -22,14 +23,13 @@ definition(
 )
 
 preferences {
-  section("Select the door lock:") {
-    input "lock", "capability.lock", required: true
-  }
-  section("Select the door contact sensor:") {
-    input "contact", "capability.contactSensor", required: false
+  section("Devices") {
+    input "lock", "capability.lock", title: "Door Lock", required: true
+    input "contact", "capability.contactSensor", title: "Contact Sensor", required: false
   }
   section("Automatically lock the door...") {
-    input "minutesLater", "number", title: "Delay (in minutes):", required: true, defaultValue: "10"
+    input "lockAfterMinutes", "number", title: "after X minutes:", required: true, defaultValue: "10"
+    input "confirmLockSeconds", "number", title: "and confirm in X seconds:", required: false, defaultValue: "10"
   }
   section( "Notifications" ) {
     input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
@@ -48,48 +48,46 @@ def updated() {
 }
 
 def initialize() {
-  log.debug "Settings: ${settings}"
+  //log.debug "Settings: ${settings}"
   subscribe(lock, "lock", doorHandler, [filterEvents: false])
   subscribe(lock, "unlock", doorHandler, [filterEvents: false])
 }
 
 def sendMessage(message) {
-  log.debug("Sending Notification (push:${sendPushMessage}, sms:${phoneNumber})... ${message}")
-  if (sendPushMessage == "Yes") {
+  //log.debug("Sending Notification (push:${sendPushMessage}, sms:${phoneNumber})... ${message}")
+  if (sendPushMessage == "Yes")
     sendPush(message)
-  }
-  if (phoneNumber && phoneNumber != "" && phoneNumber != "0") {
+  if (phoneNumber && phoneNumber != "" && phoneNumber != "0")
     sendSms(phoneNumber, message)
-  }
 }
 
 def checkLockDoor() {
-  if (lock.latestValue("lock") == "locked")
-    sendMessage("Success, ${lock} was auto-locked")
+  String lockState = lock.latestValue("lock")
+  String contactState = contact ? contact.latestValue("contact") : "closed"
+  if (lockState == "locked")
+    sendMessage("Success, ${lock} was auto-locked (door is ${contactState})")
   else
-    sendMessage("Warning, ${lock} failed to auto-lock")
+    sendMessage("Warning, ${lock} failed to auto-lock (door is ${contactState})")
 }
 
 def lockDoor() {
   String lockState = lock.latestValue("lock")
   String contactState = contact ? contact.latestValue("contact") : "closed"
-  log.debug "Attempting to lock the door... (Current State: ${lockState}, ${contactState})"
-
+  //log.debug "Attempting to lock the door... (Current State: ${lockState}, ${contactState})"
   if (contactState == "open") {
-    sendMessage("${lock} has been open and ${lockState} for ${minutesLater} minutes")
+    sendMessage("Warning, ${lock} has been open and ${lockState} for ${lockAfterMinutes} minutes")
   } else if (lockState == "unlocked" && contactState == "closed") {
     lock.lock()
-    runIn(60, checkLockDoor)
+    if (confirmLockSeconds && confirmLockSeconds > 0)
+      runIn(confirmLockSeconds, checkLockDoor)
   }
 }
 
 def doorHandler(evt) {
   if (evt.value == "locked" && (!contact || contact.latestValue("contact") == "closed")) {
-    unschedule(lockDoor) // nothing to do when door is locked (and closed if there is a contact sensor)
+    unschedule(lockDoor)
   } else if (evt.value == "unlocked") {
-    runIn((minutesLater * 60), lockDoor) // something to do when door is unlocked
-  } else {
-    log.debug "Unknown Event: ${evt.value}"
+    runIn((lockAfterMinutes * 60), lockDoor)
   }
 }
 
