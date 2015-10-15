@@ -29,7 +29,7 @@ preferences {
     input "contact", "capability.contactSensor", required: false
   }
   section("Automatically lock the door...") {
-    input "minutesLater", "number", title: "Delay (in minutes):", required: true
+    input "minutesLater", "number", title: "Delay (in minutes):", required: true, defaultValue: "10"
   }
   section( "Notifications" ) {
     input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
@@ -54,21 +54,20 @@ def initialize() {
 }
 
 def sendMessage(message) {
-  if ( sendPushMessage == "Yes" ) {
-    log.debug("Sending Push Notification...")
+  log.debug("Sending Notification (push:${sendPushMessage}, sms:${phoneNumber})... ${message}")
+  if (sendPushMessage == "Yes") {
     sendPush(message)
   }
-  if ( phoneNumber != "0" ) {
-    log.debug("Sending text message...")
+  if (phoneNumber && phoneNumber != "" && phoneNumber != "0") {
     sendSms(phoneNumber, message)
   }
 }
 
 def checkLockDoor() {
   if (lock.latestValue("lock") == "locked")
-    sendMessage("${lock} was auto-locked after ${minutesLater} minutes")
+    sendMessage("Success, ${lock} was auto-locked")
   else
-    sendMessage("${lock} failed to auto-lock after ${minutesLater} minutes")
+    sendMessage("Warning, ${lock} failed to auto-lock")
 }
 
 def lockDoor() {
