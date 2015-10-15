@@ -13,10 +13,10 @@
  */
 
 definition(
-  name: "Auto Door Lock",
+  name: "Door Lock Auto Lock",
   namespace: "natecj",
   author: "Nathan Jacobson",
-  description: "Automatically locks a specific door after X minutes. Use the optional contact sensor to send a notification if left open and unable to auto-lock.",
+  description: "Automatically locks a door after X minutes with an optional contact sensor.",
   category: "Safety & Security",
   iconUrl: "http://www.gharexpert.com/mid/4142010105208.jpg",
   iconX2Url: "http://www.gharexpert.com/mid/4142010105208.jpg"
