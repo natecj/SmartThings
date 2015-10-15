@@ -15,6 +15,7 @@ metadata {
 	definition (name: "Ping Sensor", namespace: "natecj", author: "Nathan Jacobson") {
 		capability "Presence Sensor"
 		capability "Sensor"
+		capability "Polling"
 	}
 
 	simulator {
@@ -30,29 +31,43 @@ metadata {
 		main "presence"
 		details "presence"
 	}
-}
 
-preferences {
-  input("ip", "string", title:"IP Address", description: "IP Address", required: true, displayDuringSetup: true)
-}
-
-def init() {
-  log.info('init()')
+	preferences {
+		section("Device Settings:") {
+			input "host", "string", title:"Device to Ping", description: "Host or IP Address", required: true, displayDuringSetup: true
+		}
+	}
 }
 
 def installed() {
   log.info('installed()')
-  init()
+  state.presence = false
 }
 
 def updated() {
   log.info('updated()')
-  unsubscribe()
-  init()
+  state.presence = false
 }
 
 def poll() {
   log.info('poll()')
+  if (!settings.host) settings.host = '192.168.11.100'
+  log.debug "Pinging host ${settings.host}..."
+
+	def proc = "ping -c 3 ${host}".execute()
+	proc.waitFor()
+	newState = (proc.exitValue() == 0)
+
+	if (state.presence != newState) {
+		state.presence = newState
+		if (newState) {
+			log.debug "Host was found (false => true)"
+			parse("presence: 1")
+		} else {
+			log.debug "Host was lost (true => false)"
+			parse("presence: 0")
+		}
+	}
 }
 
 def parse(String description) {
