@@ -21,6 +21,7 @@ metadata {
     capability "Sensor"
     capability "Lock Codes"
     capability "Battery"
+	  capability "Contact Sensor"
 
     command "unlockwtimeout"
 
@@ -701,4 +702,12 @@ def reportAllCodes(state) {
     }
   }
   sendEvent(map)
+}
+
+def open() {
+  unlock()
+}
+
+def close() {
+  lock()
 }
