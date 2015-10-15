@@ -72,11 +72,8 @@ def checkLockDoor() {
 }
 
 def lockDoor() {
-  lockState = lock.latestValue("lock")
-  if (contact)
-    contactState = contact.latestValue("contact")
-  else
-    contactState = "closed"
+  String lockState = lock.latestValue("lock")
+  String contactState = contact ? contact.latestValue("contact") : "closed"
   log.debug "Attempting to lock the door... (Current State: ${lockState}, ${contactState})"
 
   if (contactState == "open") {
