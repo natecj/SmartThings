@@ -1,5 +1,5 @@
 /**
- *  Copyright 2015 SmartThings
+ *  Copyright 2015 Nathan Jacobson
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -36,6 +36,10 @@ preferences {
   input("ip", "string", title:"IP Address", description: "IP Address", required: true, displayDuringSetup: true)
 }
 
+def init() {
+  log.info('init()')
+}
+
 def installed() {
   log.info('installed()')
   init()
@@ -45,11 +49,6 @@ def updated() {
   log.info('updated()')
   unsubscribe()
   init()
-}
-
-def init() {
-  log.info('init()')
-  state.lastSeen = null
 }
 
 def poll() {
