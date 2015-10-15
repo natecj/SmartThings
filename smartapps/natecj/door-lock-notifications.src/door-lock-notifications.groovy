@@ -1,14 +1,21 @@
 /**
- *  Door Lock Code Distress Message
+ *  Copyright 2015 Nathan Jacobson <natecj@gmail.com>
  *
- *  Copyright 2014 skp19
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
  *
  */
 definition(
-    name: "Door Lock Code Distress Message",
-    namespace: "skp19",
-    author: "skp19",
-    description: "Sends a text to someone when a specific code is entered",
+    name: "Door Lock Notifications",
+    namespace: "natecj",
+    author: "Nathan Jacobson",
+    description: "Get notifications for a variety of door lock events",
     category: "Safety & Security",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
