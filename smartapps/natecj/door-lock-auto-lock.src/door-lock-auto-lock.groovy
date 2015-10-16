@@ -29,6 +29,7 @@ preferences {
   }
   section("Automatically lock the door...") {
     input "lockAfterMinutes", "number", title: "after X minutes:", required: true, defaultValue: "10"
+    input "confirmLockAfterSeconds", "number", title: "confirm lock after X seconds:", required: true, defaultValue: "10"
   }
   section( "Notifications" ) {
     input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
@@ -47,13 +48,11 @@ def updated() {
 }
 
 def initialize() {
-  //log.debug "Settings: ${settings}"
   subscribe(lock, "lock", doorHandler, [filterEvents: false])
   subscribe(lock, "unlock", doorHandler, [filterEvents: false])
 }
 
 def sendMessage(message) {
-  //log.debug("Sending Notification (push:${sendPushMessage}, sms:${phoneNumber})... ${message}")
   if (sendPushMessage == "Yes")
     sendPush(message)
   if (sendTextMessage && sendTextMessage != "" && sendTextMessage != "0")
@@ -63,8 +62,10 @@ def sendMessage(message) {
 def checkLockDoor() {
   String lockState = lock.latestValue("lock")
   String contactState = contact ? contact.latestValue("contact") : "closed"
-  if (lockState == "locked")
-    sendMessage("Success, ${lock} was auto-locked (door is ${contactState})")
+  if (lockState == "locked" && contactState == "closed")
+    sendMessage("Success, ${lock} was auto-locked")
+  else if (lockState == "locked" && contactState == "open")
+    sendMessage("Warning, ${lock} was auto-locked with the door open")
   else
     sendMessage("Warning, ${lock} failed to auto-lock (door is ${contactState})")
 }
@@ -72,19 +73,20 @@ def checkLockDoor() {
 def lockDoor() {
   String lockState = lock.latestValue("lock")
   String contactState = contact ? contact.latestValue("contact") : "closed"
-  //log.debug "Attempting to lock the door... (Current State: ${lockState}, ${contactState})"
   if (contactState == "open") {
-    sendMessage("Warning, ${lock} has been open and ${lockState} for ${lockAfterMinutes} minutes")
+    sendMessage("Warning, ${contact} is ${contactState} and ${lock} is ${lockState}")
   } else if (lockState == "unlocked" && contactState == "closed") {
     lock.lock()
-    runIn(10, checkLockDoor)
+    if (confirmLockAfterSeconds > 0)
+      runIn(confirmLockAfterSeconds, checkLockDoor)
+    else
+      sendMessage("Success, ${lock} was auto-locked")
   }
 }
 
 def doorHandler(evt) {
   if (evt.value == "locked" && (!contact || contact.latestValue("contact") == "closed")) {
-    unschedule(lockDoor)
-    unschedule(checkLockDoor)
+    unschedule()
   } else if (evt.value == "unlocked") {
     runIn((lockAfterMinutes * 60), lockDoor)
   }
