@@ -77,22 +77,34 @@ metadata {
     }
 
     // Thermostat Mode Control
-    standardTile("modeoff", "device.thermostatMode", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "off", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off"
+    standardTile("modeoff", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+      state "off", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#e86d13"
+      state "heat", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#ffffff"
+      state "cool", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#ffffff"
+      state "auto", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#ffffff"
     }
-    standardTile("modeheat", "device.thermostatMode", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "heat", label:'', action:"modeheat", icon:"st.thermostat.heat"
+    standardTile("modeheat", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+      state "off", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#ffffff"
+      state "heat", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#e86d13"
+      state "cool", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#ffffff"
+      state "auto", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#ffffff"
     }
-    standardTile("modecool", "device.thermostatMode", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "cool", label:'', action:"modecool", icon:"st.thermostat.cool"
+    standardTile("modecool", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+      state "off", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#ffffff"
+      state "heat", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#ffffff"
+      state "cool", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#e86d13"
+      state "auto", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#ffffff"
     }
-    standardTile("modeauto", "device.thermostatMode", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "cool", label:'', action:"modeauto", icon:"st.thermostat.auto"
+    standardTile("modeauto", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+      state "off", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#ffffff"
+      state "heat", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#ffffff"
+      state "cool", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#ffffff"
+      state "auto", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#e86d13"
     }
 
     // Heating Set Point Controls
     standardTile("heatLevelUp", "device.heatingSetpoint", width: 3, height: 1, canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-      state "heatLevelUp", label:'Heat', action:"heatLevelUp", icon:"st.thermostat.thermostat-up"//, backgroundColor:"#F7C4BA"
+      state "heatLevelUp", label:'', action:"heatLevelUp", icon:"st.thermostat.thermostat-up"//, backgroundColor:"#F7C4BA"
     }
     valueTile("heatingSetpoint", "device.heatingSetpoint", width: 3, height: 2, inactiveLabel: false) {
 			state "heat", label:'${currentValue}°', unit:"F",
@@ -106,12 +118,12 @@ metadata {
 				]
 		}
 		standardTile("heatLevelDown", "device.heatingSetpoint", width: 3, height: 1, canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-      state "heatLevelDown", label:'Heat', action:"heatLevelDown", icon:"st.thermostat.thermostat-down"//, backgroundColor:"#F7C4BA"
+      state "heatLevelDown", label:'', action:"heatLevelDown", icon:"st.thermostat.thermostat-down"//, backgroundColor:"#F7C4BA"
     }
 
     // Cooling Set Point Controls
     standardTile("coolLevelUp", "device.coolingSetpoint", width: 3, height: 1, canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-      state "coolLevelUp", label:'Cool', action:"coolLevelUp", icon:"st.thermostat.thermostat-up"//, backgroundColor:"#F7C4BA"
+      state "coolLevelUp", label:'', action:"coolLevelUp", icon:"st.thermostat.thermostat-up"//, backgroundColor:"#F7C4BA"
     }
 		valueTile("coolingSetpoint", "device.coolingSetpoint", width: 3, height: 2, inactiveLabel: false) {
 			state "cool", label:'${currentValue}°', unit:"F",
@@ -125,36 +137,29 @@ metadata {
 				]
 		}
 		standardTile("coolLevelDown", "device.coolingSetpoint", width: 3, height: 1, canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-      state "coolLevelDown", label:'Cool', action:"coolLevelDown", icon:"st.thermostat.thermostat-down"//, backgroundColor:"#F7C4BA"
+      state "coolLevelDown", label:'', action:"coolLevelDown", icon:"st.thermostat.thermostat-down"//, backgroundColor:"#F7C4BA"
     }
 
     // Fan Mode Control
-    standardTile("fanauto", "device.thermostatFanMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "fanauto", label:'', action:"fanauto", icon:"st.thermostat.fan-auto"
-    }
-    standardTile("fanon", "device.thermostatFanMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "fanon", label:'', action:"fanon", icon:"st.thermostat.fan-on"
-    }
-    standardTile("fancir", "device.thermostatFanMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "fancir", label:'', action:"fancir", icon:"st.thermostat.fan-circulate"
+    standardTile("fanMode", "device.thermostatFanMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+      state "fanAuto", label:'Fan Auto', action:"fanon", icon:"st.thermostat.fan-auto-icn"
+      state "fanOn", label:'Fan On', action:"fanauto", icon:"st.thermostat.fan-on-icn"
+      state "fanCirculate", label:'Fan Cir', action:"fanauto", icon:"st.thermostat.fan-cirulate-icn"
     }
 
     // Refresh and Config Controls
     standardTile("modefan", "device.currentfanMode", width: 2, height: 2, canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
       state ("default", label:'${currentValue}', icon:"st.Appliances.appliances11")
     }
-		standardTile("refresh", "device.thermostatMode", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
+		standardTile("refresh", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", action:"poll", icon:"st.secondary.refresh"
 		}
-		standardTile("configure", "device.configure", width: 3, height: 2, inactiveLabel: false, decoration: "flat") {
+		standardTile("configure", "device.configure", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "configure", label:'  ', action:"configuration.configure", icon:"st.secondary.configure"
-		}
-    valueTile("statusText", "statusText", inactiveLabel: false, width: 2, height: 2) {
-			state "statusText", label:'${currentValue}', backgroundColor:"#ffffff"
 		}
 
 		main "temperature"
-    details(["temperature", "heatLevelUp", "coolLevelUp", "heatingSetpoint", "coolingSetpoint", "heatLevelDown", "coolLevelDown", "fanon", "fanauto", "fancir", "modeoff", "modeheat", "modecool", "modeauto", "refresh", "configure"])
+    details(["temperature", "heatLevelUp", "coolLevelUp", "heatingSetpoint", "coolingSetpoint", "heatLevelDown", "coolLevelDown", "modeauto", "modeheat", "modecool", "modeoff", "fanMode", "refresh"])
 	}
 }
 
