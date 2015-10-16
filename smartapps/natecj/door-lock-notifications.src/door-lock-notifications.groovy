@@ -13,13 +13,14 @@
  */
 
 definition(
-    name: "Door Lock Notifications",
-    namespace: "natecj",
-    author: "Nathan Jacobson",
-    description: "Get notifications for a variety of door lock events",
-    category: "Safety & Security",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
+  name: "Door Lock Notifications",
+  namespace: "natecj",
+  author: "Nathan Jacobson",
+  description: "Get notifications for a variety of door lock events",
+  category: "Safety & Security",
+  iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+  iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
+)
 
 import groovy.json.JsonSlurper
 

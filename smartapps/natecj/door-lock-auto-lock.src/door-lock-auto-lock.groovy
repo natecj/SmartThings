@@ -32,7 +32,7 @@ preferences {
   }
   section( "Notifications" ) {
     input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
-    input "phoneNumber", "phone", title: "Enter phone number to send text notification.", required: false
+    input "sendTextMessage", "phone", title: "Phone number for text notifications.", required: false
   }
 }
 
@@ -56,8 +56,8 @@ def sendMessage(message) {
   //log.debug("Sending Notification (push:${sendPushMessage}, sms:${phoneNumber})... ${message}")
   if (sendPushMessage == "Yes")
     sendPush(message)
-  if (phoneNumber && phoneNumber != "" && phoneNumber != "0")
-    sendSms(phoneNumber, message)
+  if (sendTextMessage && sendTextMessage != "" && sendTextMessage != "0")
+    sendSms(sendTextMessage, message)
 }
 
 def checkLockDoor() {
