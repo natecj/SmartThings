@@ -44,7 +44,12 @@ def initialize() {
 }
 
 def checkCode(evt) {
-  log.debug "$evt.value: $evt, $settings"
-  def lockData = new JsonSlurper().parseText(evt.data)
-  log.debug "lockData: ${lockData}"
+  log.debug "Device: $evt.displayName ($evt.deviceId)"
+  log.debug "Data: $evt.data"
+  log.debug "Value: $evt.value"
+  log.debug "State Change: ${evt.isStateChange()}"
+  if (evt.data) {
+    def lockData = new JsonSlurper().parseText(evt.data)
+    log.debug "lockData: ${lockData}"
+  }
 }
