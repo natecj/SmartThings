@@ -96,7 +96,7 @@ metadata {
     }
     valueTile("heatingSetpoint", "device.heatingSetpoint", width: 3, height: 2, inactiveLabel: false) {
 			state "heat", label:'${currentValue}°', unit:"F",
-            	backgroundColors:[
+        backgroundColors:[
 					[value: 40, color: "#f49b88"],
 					[value: 50, color: "#f28770"],
 					[value: 60, color: "#f07358"],
@@ -115,7 +115,7 @@ metadata {
     }
 		valueTile("coolingSetpoint", "device.coolingSetpoint", width: 3, height: 2, inactiveLabel: false) {
 			state "cool", label:'${currentValue}°', unit:"F",
-            	backgroundColors:[
+        backgroundColors:[
 					[value: 40, color: "#88e1f4"],
 					[value: 50, color: "#70dbf2"],
 					[value: 60, color: "#58d5f0"],
