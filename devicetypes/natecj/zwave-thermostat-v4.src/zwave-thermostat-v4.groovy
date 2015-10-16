@@ -78,28 +78,28 @@ metadata {
 
     // Thermostat Mode Control
     standardTile("modeoff", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "off", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#e86d13"
+      state "off", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#44b621"
       state "heat", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#ffffff"
       state "cool", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#ffffff"
       state "auto", label: '', action:"modeoff", icon:"st.thermostat.heating-cooling-off", backgroundColor:"#ffffff"
     }
     standardTile("modeheat", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
       state "off", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#ffffff"
-      state "heat", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#e86d13"
+      state "heat", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#44b621"
       state "cool", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#ffffff"
       state "auto", label:'', action:"modeheat", icon:"st.thermostat.heat", backgroundColor:"#ffffff"
     }
     standardTile("modecool", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
       state "off", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#ffffff"
       state "heat", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#ffffff"
-      state "cool", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#e86d13"
+      state "cool", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#44b621"
       state "auto", label:'', action:"modecool", icon:"st.thermostat.cool", backgroundColor:"#ffffff"
     }
     standardTile("modeauto", "device.thermostatMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
       state "off", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#ffffff"
       state "heat", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#ffffff"
       state "cool", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#ffffff"
-      state "auto", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#e86d13"
+      state "auto", label:'', action:"modeauto", icon:"st.thermostat.auto", backgroundColor:"#44b621"
     }
 
     // Heating Set Point Controls
