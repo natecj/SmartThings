@@ -29,7 +29,6 @@ preferences {
   }
   section("Automatically lock the door...") {
     input "lockAfterMinutes", "number", title: "after X minutes:", required: true, defaultValue: "10"
-    input "confirmLockSeconds", "number", title: "and confirm in X seconds:", required: false, defaultValue: "10"
   }
   section( "Notifications" ) {
     input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
@@ -78,14 +77,14 @@ def lockDoor() {
     sendMessage("Warning, ${lock} has been open and ${lockState} for ${lockAfterMinutes} minutes")
   } else if (lockState == "unlocked" && contactState == "closed") {
     lock.lock()
-    if (confirmLockSeconds && confirmLockSeconds > 0)
-      runIn(confirmLockSeconds, checkLockDoor)
+    runIn(10, checkLockDoor)
   }
 }
 
 def doorHandler(evt) {
   if (evt.value == "locked" && (!contact || contact.latestValue("contact") == "closed")) {
     unschedule(lockDoor)
+    unschedule(checkLockDoor)
   } else if (evt.value == "unlocked") {
     runIn((lockAfterMinutes * 60), lockDoor)
   }

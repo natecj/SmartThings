@@ -21,7 +21,7 @@ metadata {
     capability "Sensor"
     capability "Lock Codes"
     capability "Battery"
-	capability "Contact Sensor"
+    capability "Contact Sensor"
 
     command "unlockwtimeout"
 
