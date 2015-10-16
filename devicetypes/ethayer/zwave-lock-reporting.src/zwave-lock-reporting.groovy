@@ -21,7 +21,7 @@ metadata {
     capability "Sensor"
     capability "Lock Codes"
     capability "Battery"
-	  capability "Contact Sensor"
+	capability "Contact Sensor"
 
     command "unlockwtimeout"
 
@@ -86,6 +86,10 @@ def parse(String description) {
     def cmd = zwave.parse(description, [ 0x98: 1, 0x72: 2, 0x85: 2, 0x86: 1 ])
     if (cmd) {
       result = zwaveEvent(cmd)
+      if (result.name == "lock" && result.value == "locked")
+      	result << createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
+      else if (result.name == "lock" && result.value == "unlocked")
+      	result << createEvent(name: "contact", value: "open", descriptionText: "$device.displayName is open")
     }
   }
   log.debug "\"$description\" parsed to ${result.inspect()}"
