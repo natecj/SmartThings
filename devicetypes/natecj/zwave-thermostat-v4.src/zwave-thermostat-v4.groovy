@@ -142,9 +142,9 @@ metadata {
 
     // Fan Mode Control
     standardTile("fanMode", "device.thermostatFanMode", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-      state "fanAuto", label:'Fan Auto', action:"fanon", icon:"st.thermostat.fan-auto-icn"
-      state "fanOn", label:'Fan On', action:"fanauto", icon:"st.thermostat.fan-on-icn"
-      state "fanCirculate", label:'Fan Cir', action:"fanauto", icon:"st.thermostat.fan-cirulate-icn"
+      state "fanAuto", label:'', action:"fanon", icon:"st.thermostat.fan-auto-icn"
+      state "fanOn", label:'', action:"fanauto", icon:"st.thermostat.fan-on-icn"
+      state "fanCirculate", label:'', action:"fanauto", icon:"st.thermostat.fan-cirulate-icn"
     }
 
     // Refresh and Config Controls

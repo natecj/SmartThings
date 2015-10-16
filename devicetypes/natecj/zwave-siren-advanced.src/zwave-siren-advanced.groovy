@@ -14,11 +14,11 @@
 metadata {
 	definition (name: "Z-Wave Siren Advanced", namespace: "natecj", author: "Nathan Jacobson") {
 		capability "Actuator"
-    capability "Alarm"
-    capability "Battery"
-    capability "Polling"
-    capability "Refresh"
-    capability "Sensor"
+		capability "Alarm"
+		capability "Battery"
+		capability "Polling"
+		capability "Refresh"
+		capability "Sensor"
 		capability "Switch"
 
 		fingerprint inClusters: "0x20,0x25,0x86,0x80,0x85,0x72,0x71"
@@ -35,21 +35,19 @@ metadata {
 
 	tiles {
 		standardTile("alarm", "device.alarm", width: 2, height: 2) {
-			state "off", label:'off', action:'alarm.strobe', icon:"st.alarm.alarm.alarm", backgroundColor:"#ffffff"
+			state "off", label:'off', action:'alarm.both', icon:"st.alarm.alarm.alarm", backgroundColor:"#ffffff"
 			state "both", label:'alarm!', action:'alarm.off', icon:"st.alarm.alarm.alarm", backgroundColor:"#e86d13"
 		}
-		standardTile("off", "device.alarm", inactiveLabel: false, decoration: "flat") {
-			state "default", label:'', action:"alarm.off", icon:"st.secondary.off"
-		}
-    valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat") {
+        
+		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat") {
 			state "battery", label:'${currentValue}% battery', unit:""
 		}
-    standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
+		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 
 		main "alarm"
-		details(["alarm","off","battery","refresh"])
+		details(["alarm", "battery", "refresh"])
 	}
 }
 
@@ -88,7 +86,10 @@ private Boolean secondsPast(timestamp, seconds) {
 
 def on() {
   log.debug "sending on"
-	both()
+  [
+    zwave.basicV1.basicSet(value: 0xFF).format(),
+    zwave.basicV1.basicGet().format()
+  ]
 }
 
 def off() {
@@ -101,26 +102,17 @@ def off() {
 
 def strobe() {
 	log.debug "sending stobe"
-	[
-		zwave.basicV1.basicSet(value: 0x21).format(),
-		zwave.basicV1.basicGet().format()
-	]
+    on()
 }
 
 def siren() {
 	log.debug "sending siren"
-	[
-		zwave.basicV1.basicSet(value: 0x42).format(),
-		zwave.basicV1.basicGet().format()
-	]
+    on()
 }
 
 def both() {
 	log.debug "sending both"
-	[
-		zwave.basicV1.basicSet(value: 0xFF).format(),
-		zwave.basicV1.basicGet().format()
-	]
+    on()
 }
 
 def refresh() {
