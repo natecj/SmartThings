@@ -212,7 +212,7 @@ def parse(String description) {
 	}
 
 	def statusTextmsg = ""
-  statusTextmsg = "${device.currentState('currentState').value}, Fan is in ${device.currentState('currentfanMode').value} and it is ${device.currentState('thermostatFanState').value}."
+  statusTextmsg = "${device.currentState('currentState').value}, Fan is ${device.currentState('thermostatFanState').value} (${device.currentState('currentfanMode').value})."
   sendEvent("name":"statusText", "value":statusTextmsg)
   log.debug statusTextmsg
 
@@ -269,7 +269,7 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatoperatingstatev1.Thermosta
       sendEvent(name: "currentState", value: "Idle" as String)
 			def mode = device.latestValue("thermostatMode")
       if (mode == "off") {
-				sendEvent(name: "currentState", value: "Unit is Off" as String)
+				sendEvent(name: "currentState", value: "System is Off" as String)
 			}
       if (mode == "aux") {
 				sendEvent(name: "currentState", value: "AUX/EM is Idle" as String)
@@ -281,7 +281,7 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatoperatingstatev1.Thermosta
 				sendEvent(name: "currentState", value: "A/C is Idle" as String)
 			}
       if (mode == "auto") {
-				sendEvent(name: "currentState", value: "Auto is Idle" as String)
+				sendEvent(name: "currentState", value: "System is Idle" as String)
 			}
 			break
 		case physicalgraph.zwave.commands.thermostatoperatingstatev1.ThermostatOperatingStateReport.OPERATING_STATE_HEATING:
