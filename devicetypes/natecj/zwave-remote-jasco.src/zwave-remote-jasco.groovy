@@ -106,8 +106,3 @@ def configure() {
 	log.debug("Sending configuration: $cmd")
 	return cmd
 }
-
-def zwaveEvent(physicalgraph.zwave.Command cmd) {
-	// Handles all Z-Wave commands we aren't interested in
-	[:]
-}
