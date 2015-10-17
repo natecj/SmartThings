@@ -32,22 +32,30 @@ metadata {
 		reply "200142,2002": "command: 2003, payload: 42"
 		reply "2001FF,delay 3000,200100,2002": "command: 2003, payload: 00"
 	}
-
-	tiles {
-		standardTile("alarm", "device.alarm", width: 2, height: 2) {
-			state "off", label:'off', action:'alarm.both', icon:"st.alarm.alarm.alarm", backgroundColor:"#ffffff"
-			state "both", label:'alarm!', action:'alarm.off', icon:"st.alarm.alarm.alarm", backgroundColor:"#e86d13"
+    
+	tiles(scale: 2) {
+		multiAttributeTile(name:"alarm", type: "lighting", width: 6, height: 4, canChangeIcon: true){
+			tileAttribute ("device.alarm", key: "PRIMARY_CONTROL") {
+				attributeState "both", label:'alarm!', action:'alarm.off', icon:"st.alarm.alarm.alarm", backgroundColor:"#e86d13"
+				attributeState "off", label:'off', action:'alarm.both', icon:"st.alarm.alarm.alarm", backgroundColor:"#ffffff"
+			}
+            tileAttribute ("statusText", key: "SECONDARY_CONTROL") {
+           		attributeState "statusText", label:'${currentValue}'       		
+            }
 		}
-        
-		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat") {
+
+		standardTile("off", "device.alarm", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+			state "default", label:'', action:"alarm.off", icon:"st.secondary.off"
+		}
+        valueTile("battery", "device.battery", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "battery", label:'${currentValue}% battery', unit:""
 		}
-		standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
+        standardTile("refresh", "device.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-
+        
 		main "alarm"
-		details(["alarm", "battery", "refresh"])
+		details(["alarm", "off", "battery", "refresh"])
 	}
 }
 
