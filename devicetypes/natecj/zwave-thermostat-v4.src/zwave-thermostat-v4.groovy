@@ -212,8 +212,8 @@ def parse(String description) {
 	}
 
   def statusTextmsg = ""
-  //statusTextmsg = "${device.currentState('currentState').value}, Fan is ${device.currentState('thermostatFanState').value} (${device.currentState('currentfanMode').value})."
-  statusTextmsg = "${device.currentState('currentState')?.value}, Fan is in ${device.currentState('currentfanMode')?.value} and it is ${device.currentState('thermostatFanState')?.value}."
+  statusTextmsg = "${device.currentState('currentState')?.value}, Fan is ${device.currentState('thermostatFanState')?.value} (${device.currentState('currentfanMode')?.value})."
+  //statusTextmsg = "${device.currentState('currentState')?.value}, Fan is in ${device.currentState('currentfanMode')?.value} and it is ${device.currentState('thermostatFanState')?.value}."
   sendEvent("name":"statusText", "value":statusTextmsg)
   log.debug statusTextmsg
 

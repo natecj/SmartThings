@@ -17,7 +17,6 @@ metadata {
 		capability "Button"
 		capability "Configuration"
 		capability "Sensor"
-		capability "Battery"
 
 		fingerprint deviceId: "0x01"
 	}
@@ -30,13 +29,13 @@ metadata {
 		standardTile("state", "device.state", width: 2, height: 2) {
 			state "connected", label: "", icon: "st.unknown.zwave.remote-controller", backgroundColor: "#ffffff"
 		}
-
-		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat") {
-			state "battery", label:'${currentValue}% battery', unit:""
+        
+		standardTile("configure", "device.configure", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
 		}
 
 		main "state"
-		details(["state", "battery"])
+		details(["state", "configure"])
 	}
 }
 
@@ -53,18 +52,6 @@ def parse(String description) {
 	return results
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.wakeupv1.WakeUpNotification cmd) {
-	def results = [createEvent(descriptionText: "$device.displayName woke up", isStateChange: false)]
-
-	def prevBattery = device.currentState("battery")
-	if (!prevBattery || (new Date().time - prevBattery.date.time)/60000 >= 60 * 53) {
-		results << response(zwave.batteryV1.batteryGet().format())
-	}
-	results += configurationCmds().collect{ response(it) }
-	results << response(zwave.wakeUpV1.wakeUpNoMoreInformation().format())
-	return results
-}
-
 def buttonEvent(button, held) {
 	button = button as Integer
 	log.debug "buttonEvent: $device.displayName button $button was held ($held)"
@@ -76,33 +63,50 @@ def buttonEvent(button, held) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.sceneactivationv1.SceneActivationSet cmd) {
+	log.debug "zwaveEvent() sceneactivationv1.SceneActivationSet"
 	Integer button = ((cmd.sceneId + 1) / 2) as Integer
 	Boolean held = !(cmd.sceneId % 2)
 	buttonEvent(button, held)
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
-	def map = [ name: "battery", unit: "%" ]
-	if (cmd.batteryLevel == 0xFF) {
-		map.value = 1
-		map.descriptionText = "${device.displayName} has a low battery"
-	} else {
-		map.value = cmd.batteryLevel
-	}
-	createEvent(map)
+def zwaveEvent(physicalgraph.zwave.commands.sceneactuatorconfv1.SceneActuatorConfGet cmd) {
+	log.debug "zwaveEvent() sceneactuatorconfv1.SceneActuatorConfGet"
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.sceneactuatorconfv1.SceneActuatorConfReport cmd) {
+	log.debug "zwaveEvent() sceneactuatorconfv1.SceneActuatorConfReport"
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.configurationv1.ConfigurationReport cmd) {
+	log.debug "zwaveEvent() configurationv1.ConfigurationReport"
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.hailv1.Hail cmd) {
+	log.debug "zwaveEvent() hailv1.Hail"
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.associationv2.AssociationGroupingsReport cmd) {
+	log.debug "zwaveEvent() associationv2.AssociationGroupingsReport (${cmd?.supportedGroupings})"
 }
 
 def zwaveEvent(physicalgraph.zwave.Command cmd) {
+	log.debug "zwaveEvent() Unknown"
 	[ descriptionText: "$device.displayName: $cmd", linkText:device.displayName, displayed: false ]
 }
 
-def configurationCmds() {
-	[ zwave.configurationV1.configurationSet(parameterNumber: 250, scaledConfigurationValue: 1).format(),
-	  zwave.associationV1.associationSet(groupingIdentifier:1, nodeId:zwaveHubNodeId).format() ]
-}
-
 def configure() {
-	def cmd = configurationCmds()
-	log.debug("Sending configuration: $cmd")
-	return cmd
+	def commands = [
+//        zwave.configurationV1.configurationSet(parameterNumber: 250, scaledConfigurationValue: 1).format(),
+//        zwave.associationV1.associationSet(groupingIdentifier:1, nodeId:zwaveHubNodeId).format(),
+        zwave.associationV1.associationGroupingsGet().format(),
+        zwave.sceneControllerConfV1.sceneControllerConfSet(groupId:1, sceneId:1).format(),
+        zwave.sceneControllerConfV1.sceneControllerConfSet(groupId:2, sceneId:2).format(),
+        zwave.sceneControllerConfV1.sceneControllerConfSet(groupId:3, sceneId:3).format(),
+        zwave.associationV1.associationSet(groupingIdentifier: 1, nodeId: zwaveHubNodeId).format(),
+        zwave.associationV1.associationSet(groupingIdentifier: 2, nodeId: zwaveHubNodeId).format(),
+        zwave.associationV1.associationSet(groupingIdentifier: 3, nodeId: zwaveHubNodeId).format()
+	]
+    commands << 
+	log.debug("Sending configuration: $commands")
+	return delayBetween(commands, 2300)
 }
