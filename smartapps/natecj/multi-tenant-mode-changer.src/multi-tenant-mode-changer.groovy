@@ -18,9 +18,8 @@ definition(
   author: "Nathan Jacobson",
   description: "Change modes based on virtual switches representing people in zones.",
   category: "Convenience",
-  iconUrl: "https://dl.dropboxusercontent.com/u/54190708/LockManager/lockmanager.png",
-  iconX2Url: "https://dl.dropboxusercontent.com/u/54190708/LockManager/lockmanagerx2.png",
-  iconX3Url: "https://dl.dropboxusercontent.com/u/54190708/LockManager/lockmanagerx3.png"
+  iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+  iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
 )
 
 preferences {
