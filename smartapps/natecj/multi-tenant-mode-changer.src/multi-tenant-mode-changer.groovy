@@ -17,9 +17,7 @@ definition(
   namespace: "natecj",
   author: "Nathan Jacobson",
   description: "Change modes based on virtual switches representing people in zones.",
-  category: "Convenience",
-  iconUrl: "",
-  iconX2Url: ""
+  category: "Convenience"
 )
 
 preferences {
