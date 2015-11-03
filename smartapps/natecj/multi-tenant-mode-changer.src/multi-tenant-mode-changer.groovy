@@ -17,11 +17,23 @@ definition(
   namespace: "natecj",
   author: "Nathan Jacobson",
   description: "Change modes based on virtual switches representing people in zones.",
-  category: "Convenience"
+  category: "Convenience",
+  iconUrl: "https://dl.dropboxusercontent.com/u/54190708/LockManager/lockmanager.png",
+  iconX2Url: "https://dl.dropboxusercontent.com/u/54190708/LockManager/lockmanagerx2.png",
+  iconX3Url: "https://dl.dropboxusercontent.com/u/54190708/LockManager/lockmanagerx3.png"
 )
 
 preferences {
-
+	section("Switches"){
+    input "zone1switches", "capability.switch", title: "Zone Upstairs", multiple: true
+    input "zone2switches", "capability.switch", title: "Zone Downstairs", multiple: true
+  }
+	section("Modes") {
+	  input "modeAllOn", "mode", title: "All On", defaultValue: "Home"
+	  input "modeAllOff", "mode", title: "All Off", defaultValue: "Away"
+	  input "modeOnlyZone1", "mode", title: "Only Upstairs", defaultValue: "Night"
+	  input "modeOnlyZone2", "mode", title: "Only Downstairs", defaultValue: "Day"
+	}
 }
 
 def installed() {
@@ -34,4 +46,25 @@ def updated() {
 }
 
 def initialize() {
+	subscribe(zone1switches, "switch", switchHandler)
+	subscribe(zone2switches, "switch", switchHandler)
+}
+
+def switchHandler(evt) {
+  def zone1on = zone1switches.any{ it.currentValue('switch') == 'on' }
+  def zone2on = zone2switches.any{ it.currentValue('switch') == 'on' }
+
+  if (zone1on && zone2on) {
+    log.debug("trigger modeAllOn ($modeAllOn)")
+    setLocationMode(modeAllOn)
+  } else if (!zone1on && !zone2on) {
+    log.debug("trigger modeAllOff ($modeAllOff)")
+    setLocationMode(modeAllOff)
+  } else if (zone1on && !zone2on) {
+    log.debug("trigger modeOnlyZone1 ($modeOnlyZone1)")
+    setLocationMode(modeOnlyZone1)
+  } else if (!zone1on && zone2on) {
+    log.debug("trigger modeOnlyZone2 ($modeOnlyZone2)")
+    setLocationMode(modeOnlyZone2)
+  }
 }
