@@ -54,16 +54,16 @@ def switchHandler(evt) {
   def zone2on = zone2switches.any{ it.currentValue('switch') == 'on' }
 
   if (zone1on && zone2on) {
-    log.debug("trigger modeAllOn (" + modeAllOn + ")")
+    log.debug("trigger modeAllOn ($modeAllOn)")
     setLocationMode(modeAllOn)
   } else if (!zone1on && !zone2on) {
-    log.debug("trigger modeAllOff (" + modeAllOff + ")")
+    log.debug("trigger modeAllOff ($modeAllOff)")
     setLocationMode(modeAllOff)
   } else if (zone1on && !zone2on) {
-    log.debug("trigger modeOnlyZone1 (" + modeOnlyZone1 + ")")
+    log.debug("trigger modeOnlyZone1 ($modeOnlyZone1)")
     setLocationMode(modeOnlyZone1)
   } else if (!zone1on && zone2on) {
-    log.debug("trigger modeOnlyZone2 (" + modeOnlyZone2 + ")")
+    log.debug("trigger modeOnlyZone2 ($modeOnlyZone2)")
     setLocationMode(modeOnlyZone2)
   }
 }
