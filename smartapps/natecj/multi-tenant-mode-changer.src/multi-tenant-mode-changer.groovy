@@ -28,10 +28,10 @@ preferences {
     input "zone2switches", "capability.switch", title: "Zone Downstairs", multiple: true
   }
 	section("Modes") {
-	  input "modeAllOn", "string", title: "All On", defaultValue: "Home"
-	  input "modeAllOff", "string", title: "All Off", defaultValue: "Away"
-	  input "modeOnlyZone1", "string", title: "Only Upstairs", defaultValue: "Night"
-	  input "modeOnlyZone2", "string", title: "Only Downstairs", defaultValue: "Day"
+	  input "modeAllOn", "mode", title: "All On", defaultValue: "Home"
+	  input "modeAllOff", "mode", title: "All Off", defaultValue: "Away"
+	  input "modeOnlyZone1", "mode", title: "Only Upstairs", defaultValue: "Night"
+	  input "modeOnlyZone2", "mode", title: "Only Downstairs", defaultValue: "Day"
 	}
 }
 
