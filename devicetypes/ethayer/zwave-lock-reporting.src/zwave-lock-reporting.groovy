@@ -69,12 +69,12 @@ import physicalgraph.zwave.commands.doorlockv1.*
 import physicalgraph.zwave.commands.usercodev1.*
 
 def parse(String description) {
-  def result = null
+  def results = []
   if (description.startsWith("Err")) {
     if (state.sec) {
-      result = createEvent(descriptionText:description, displayed:false)
+      results << createEvent(descriptionText:description, displayed:false)
     } else {
-      result = createEvent(
+      results << createEvent(
         descriptionText: "This lock failed to complete the network security key exchange. If you are unable to control it via SmartThings, you must remove it from your network and add it again.",
         eventType: "ALERT",
         name: "secureInclusion",
@@ -85,15 +85,22 @@ def parse(String description) {
   } else {
     def cmd = zwave.parse(description, [ 0x98: 1, 0x72: 2, 0x85: 2, 0x86: 1 ])
     if (cmd) {
+      def result = null
       result = zwaveEvent(cmd)
-      if (result.name == "lock" && result.value == "locked")
-      	result << createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
-      else if (result.name == "lock" && result.value == "unlocked")
-      	result << createEvent(name: "contact", value: "open", descriptionText: "$device.displayName is open")
+      if (result instanceof Collection) { results = results + result } else { results << result }
+      if (result.name == "lock") {
+        if (result.value == "locked") {
+          result = createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
+          if (result instanceof Collection) { results = results + result } else { results << result }
+        } else {
+      	  result = createEvent(name: "contact", value: "open", descriptionText: "$device.displayName is open")
+          if (result instanceof Collection) { results = results + result } else { results << result }
+        }
+      }
     }
   }
-  log.debug "\"$description\" parsed to ${result.inspect()}"
-  result
+  log.debug "\"$description\" parsed to ${results.inspect()}"
+  results
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
