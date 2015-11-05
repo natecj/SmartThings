@@ -23,9 +23,9 @@ definition(
 )
 
 preferences {
-	section("Switches"){
-    input "zone1switches", "capability.switch", title: "Upstairs", multiple: true
-    input "zone2switches", "capability.switch", title: "Downstairs", multiple: true
+	section("Zones"){
+    input "zone1switches", "capability.switch", title: "Upstairs Switches", multiple: true
+    input "zone2switches", "capability.switch", title: "Downstairs Switches", multiple: true
   }
 	section("Modes") {
 	  input "modeAllOn", "mode", title: "All On", defaultValue: "Home"
@@ -53,13 +53,7 @@ def switchHandler(evt) {
   def zone1on = zone1switches.any{ it.currentValue('switch') == 'on' }
   def zone2on = zone2switches.any{ it.currentValue('switch') == 'on' }
 
-  def both = zone1on && zone2on
-  def neither = !zone1on && !zone2on
-  def upstairs = zone1on && !zone2on
-  def downstairs = !zone1on && zone2on
-
   if (zone1on && zone2on) {
-    log.debug("trigger modeAllOn ($modeAllOn)")
     setLocationMode(modeAllOn)
     // Alarm: Disarmed
     // Upstairs AC: Stay
@@ -67,7 +61,6 @@ def switchHandler(evt) {
     // Locks: front(lock), back(lock), basement(unlock)
 
   } else if (!zone1on && !zone2on) {
-    log.debug("trigger modeAllOff ($modeAllOff)")
     setLocationMode(modeAllOff)
     // Alarm: Armed Away
     // Upstairs AC: Away
@@ -75,7 +68,6 @@ def switchHandler(evt) {
     // Locks: front(lock), back(lock), basement(lock)
 
   } else if (zone1on && !zone2on) {
-    log.debug("trigger modeOnlyZone1 ($modeOnlyZone1)")
     setLocationMode(modeOnlyZone1)
     // Alarm: Armed Stay
     // Upstairs AC: Stay
@@ -83,7 +75,6 @@ def switchHandler(evt) {
     // Locks: front(lock), back(lock), basement(lock)
 
   } else if (!zone1on && zone2on) {
-    log.debug("trigger modeOnlyZone2 ($modeOnlyZone2)")
     setLocationMode(modeOnlyZone2)
     // Alarm: Disarmed
     // Upstairs AC: Away
