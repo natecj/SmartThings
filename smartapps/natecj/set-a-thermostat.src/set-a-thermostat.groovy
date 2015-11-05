@@ -32,11 +32,6 @@ preferences {
 	section("Air conditioning setting..."){
 		input "coolingSetpoint", "number", title: "Degrees?"
 	}
-  section("SmartApp Settings") {
-    icon title: "Choose an Icon", required: false
-    label title: "Assign a name", required: false
-    mode title: "Set for specific mode(s)", required: false
-  }
 }
 
 def installed() {

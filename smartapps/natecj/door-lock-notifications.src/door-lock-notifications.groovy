@@ -28,9 +28,6 @@ preferences {
 	section("Choose Locks") {
 		input "locks", "capability.lock", multiple: true
 	}
-  section("SmartApp Settings") {
-    icon title: "Choose an Icon", required: false
-  }
 }
 
 def installed() {
