@@ -13,10 +13,10 @@
  */
 
 definition(
-  name: "Multi Tenant Mode Changer",
+  name: "Multi Zone Mode Changer",
   namespace: "natecj",
   author: "Nathan Jacobson",
-  description: "Change modes based on virtual switches representing people in zones.",
+  description: "Change modes based on one or more switches being 'on' in multiple zones.",
   category: "Convenience",
   iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
   iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
@@ -24,8 +24,8 @@ definition(
 
 preferences {
 	section("Switches"){
-    input "zone1switches", "capability.switch", title: "Zone Upstairs", multiple: true
-    input "zone2switches", "capability.switch", title: "Zone Downstairs", multiple: true
+    input "zone1switches", "capability.switch", title: "Upstairs", multiple: true
+    input "zone2switches", "capability.switch", title: "Downstairs", multiple: true
   }
 	section("Modes") {
 	  input "modeAllOn", "mode", title: "All On", defaultValue: "Home"
@@ -53,17 +53,42 @@ def switchHandler(evt) {
   def zone1on = zone1switches.any{ it.currentValue('switch') == 'on' }
   def zone2on = zone2switches.any{ it.currentValue('switch') == 'on' }
 
+  def both = zone1on && zone2on
+  def neither = !zone1on && !zone2on
+  def upstairs = zone1on && !zone2on
+  def downstairs = !zone1on && zone2on
+
   if (zone1on && zone2on) {
     log.debug("trigger modeAllOn ($modeAllOn)")
     setLocationMode(modeAllOn)
+    // Alarm: Disarmed
+    // Upstairs AC: Stay
+    // Downstairs AC: Stay
+    // Locks: front(lock), back(lock), basement(unlock)
+
   } else if (!zone1on && !zone2on) {
     log.debug("trigger modeAllOff ($modeAllOff)")
     setLocationMode(modeAllOff)
+    // Alarm: Armed Away
+    // Upstairs AC: Away
+    // Downstairs AC: Away
+    // Locks: front(lock), back(lock), basement(lock)
+
   } else if (zone1on && !zone2on) {
     log.debug("trigger modeOnlyZone1 ($modeOnlyZone1)")
     setLocationMode(modeOnlyZone1)
+    // Alarm: Armed Stay
+    // Upstairs AC: Stay
+    // Downstairs AC: Away
+    // Locks: front(lock), back(lock), basement(lock)
+
   } else if (!zone1on && zone2on) {
     log.debug("trigger modeOnlyZone2 ($modeOnlyZone2)")
     setLocationMode(modeOnlyZone2)
+    // Alarm: Disarmed
+    // Upstairs AC: Away
+    // Downstairs AC: Stay
+    // Locks: front(lock), back(lock), basement(unlock)
+
   }
 }
