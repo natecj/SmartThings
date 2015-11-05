@@ -13,42 +13,53 @@
  */
 
 definition(
-  name: "Run an Action",
+  name: "Multi Zone Mode Changer",
   namespace: "natecj",
   author: "Nathan Jacobson",
-  description: "Run an Action.",
+  description: "Change modes based on one or more switches being 'on' in multiple zones.",
   category: "Convenience",
   iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
   iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
 )
 
 preferences {
-  page(name: "selectActions")
-}
-
-def selectActions() {
-  dynamicPage(name: "selectActions", title: "Select Hello Home Action to Execute", install: true, uninstall: true) {
-    def actions = location.helloHome?.getPhrases()*.label
-    if (actions) {
-      actions.sort()
-      section("Hello Home Actions") {
-        input "action", "enum", title: "Select an action to execute", options: actions
-      }
-    }
+	section("Zones"){
+    input "zone1switches", "capability.switch", title: "Upstairs Switches", multiple: true
+    input "zone2switches", "capability.switch", title: "Downstairs Switches", multiple: true
   }
+	section("Modes") {
+	  input "modeAllOn", "mode", title: "All On", defaultValue: "Home"
+	  input "modeAllOff", "mode", title: "All Off", defaultValue: "Away"
+	  input "modeOnlyZone1", "mode", title: "Only Upstairs", defaultValue: "Night"
+	  input "modeOnlyZone2", "mode", title: "Only Downstairs", defaultValue: "Day"
+	}
 }
 
 def installed() {
-  log.debug "installed()"
   initialize()
 }
 
 def updated() {
-  log.debug "updated()"
   unsubscribe()
   initialize()
 }
 
 def initialize() {
-  log.debug "initialize()"
+	subscribe(zone1switches, "switch", switchHandler)
+	subscribe(zone2switches, "switch", switchHandler)
+}
+
+def switchHandler(evt) {
+  def zone1on = zone1switches.any{ it.currentValue('switch') == 'on' }
+  def zone2on = zone2switches.any{ it.currentValue('switch') == 'on' }
+
+  if (zone1on && zone2on) {
+    setLocationMode(modeAllOn)
+  } else if (!zone1on && !zone2on) {
+    setLocationMode(modeAllOff)
+  } else if (zone1on && !zone2on) {
+    setLocationMode(modeOnlyZone1)
+  } else if (!zone1on && zone2on) {
+    setLocationMode(modeOnlyZone2)
+  }
 }

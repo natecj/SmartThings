@@ -16,7 +16,7 @@ definition(
   name: "Run an Action",
   namespace: "natecj",
   author: "Nathan Jacobson",
-  description: "",
+  description: "Run an Action.",
   category: "Convenience",
   iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
   iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
