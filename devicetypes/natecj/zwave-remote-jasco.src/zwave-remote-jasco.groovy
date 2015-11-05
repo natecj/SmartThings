@@ -30,7 +30,7 @@ metadata {
 			state "connected", label: "", icon: "st.unknown.zwave.remote-controller", backgroundColor: "#ffffff"
 		}
         
-		standardTile("configure", "device.configure", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat") {
 			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
 		}
 
@@ -85,8 +85,8 @@ def zwaveEvent(physicalgraph.zwave.commands.hailv1.Hail cmd) {
 	log.debug "zwaveEvent() hailv1.Hail"
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.associationv2.AssociationGroupingsReport cmd) {
-	log.debug "zwaveEvent() associationv2.AssociationGroupingsReport (${cmd?.supportedGroupings})"
+def zwaveEvent(physicalgraph.zwave.commands.associationv1.AssociationGroupingsReport cmd) {
+	log.debug "zwaveEvent() associationv1.AssociationGroupingsReport (${cmd?.supportedGroupings})"
 }
 
 def zwaveEvent(physicalgraph.zwave.Command cmd) {

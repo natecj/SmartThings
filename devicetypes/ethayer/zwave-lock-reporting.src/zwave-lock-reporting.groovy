@@ -22,6 +22,7 @@ metadata {
     capability "Lock Codes"
     capability "Battery"
     capability "Contact Sensor"
+    capability "Switch"
 
     command "unlockwtimeout"
 
@@ -92,8 +93,12 @@ def parse(String description) {
         if (result.value == "locked") {
           result = createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
           if (result instanceof Collection) { results = results + result } else { results << result }
+          result = createEvent(name: "switch", value: "off", descriptionText: "$device.displayName is off")
+          if (result instanceof Collection) { results = results + result } else { results << result }
         } else {
       	  result = createEvent(name: "contact", value: "open", descriptionText: "$device.displayName is open")
+          if (result instanceof Collection) { results = results + result } else { results << result }
+          result = createEvent(name: "switch", value: "on", descriptionText: "$device.displayName is on")
           if (result instanceof Collection) { results = results + result } else { results << result }
         }
       }
@@ -101,6 +106,15 @@ def parse(String description) {
   }
   log.debug "\"$description\" parsed to ${results.inspect()}"
   results
+}
+
+def addToCollection(collection, item) {
+  if (item instanceof Collection) {
+  	collection = collection + item
+  } else {
+  	collection << item
+  }
+  collection
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
@@ -721,4 +735,12 @@ def open() {
 
 def close() {
   lock()
+}
+
+def on() {
+  unlock();
+}
+
+def off() {
+  lock();
 }
