@@ -13,33 +13,29 @@
  */
 
 definition(
-  name: "Run an Action",
+  name: "Set a Thermostat",
   namespace: "natecj",
   author: "Nathan Jacobson",
-  description: "Run an Action.",
+  description: "Set a Thermostat.",
   category: "Convenience",
   iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
   iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
 )
 
 preferences {
-  page(name: "selectActions")
-}
-
-def selectActions() {
-  dynamicPage(name: "selectActions", title: "Select Hello Home Action to Execute", install: true, uninstall: true) {
-    def actions = location.helloHome?.getPhrases()*.label
-    if (actions) {
-      actions.sort()
-      section("Hello Home Actions") {
-        input "action", "enum", title: "Select an action to execute", options: actions
-      }
-    }
-    section("SmartApp Settings") {
-      icon title: "Choose an Icon", required: false
-      label title: "Assign a name", required: false
-      mode title: "Set for specific mode(s)", required: false
-    }
+	section("Choose thermostat... ") {
+		input "thermostat", "capability.thermostat"
+	}
+	section("Heat setting...") {
+		input "heatingSetpoint", "number", title: "Degrees?"
+	}
+	section("Air conditioning setting..."){
+		input "coolingSetpoint", "number", title: "Degrees?"
+	}
+  section("SmartApp Settings") {
+    icon title: "Choose an Icon", required: false
+    label title: "Assign a name", required: false
+    mode title: "Set for specific mode(s)", required: false
   }
 }
 
@@ -53,18 +49,23 @@ def updated() {
 }
 
 def initialize() {
-  subscribe(location, changedLocationMode)
-  subscribe(app, appTouch)
+	subscribe(thermostat, "heatingSetpoint", heatingSetpointHandler)
+	subscribe(thermostat, "coolingSetpoint", coolingSetpointHandler)
+	subscribe(thermostat, "temperature", temperatureHandler)
+	subscribe(location, changedLocationMode)
+	subscribe(app, appTouch)
 }
 
 def changedLocationMode(evt) {
-  runAnAction()
+	setAThermostat()
 }
 
 def appTouch(evt) {
-  runAnAction()
+	setAThermostat()
 }
 
-def runAnAction() {
-  location.helloHome?.execute(action)
+def setAThermostat() {
+	thermostat.setHeatingSetpoint(heatingSetpoint)
+	thermostat.setCoolingSetpoint(coolingSetpoint)
+	thermostat.poll()
 }
