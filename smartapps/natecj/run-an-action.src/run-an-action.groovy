@@ -23,11 +23,17 @@ definition(
 )
 
 preferences {
-  def actions = location.helloHome?.getPhrases()*.label
-  if (actions) {
-    actions.sort()
-    section("Hello Home Actions") {
-      input "action", "enum", title: "Select an action to execute", options: actions
+  page(name: "selectActions")
+}
+
+def selectActions() {
+  dynamicPage(name: "selectActions", title: "Select Hello Home Action to Execute", install: true, uninstall: true) {
+    def actions = location.helloHome?.getPhrases()*.label
+    if (actions) {
+      actions.sort()
+      section("Hello Home Actions") {
+        input "action", "enum", title: "Select an action to execute", options: actions
+      }
     }
   }
 }
