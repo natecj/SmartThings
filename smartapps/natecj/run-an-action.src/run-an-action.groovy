@@ -35,9 +35,9 @@ def selectActions() {
         input "action", "enum", title: "Select an action to execute", options: actions
       }
     }
-    section("SmartApp Settings") {
+    section() {
       label title: "Assign a name", required: false
-      mode title: "Set for specific mode(s)", required: false
+      mode title: "Set for specific mode(s)", multiple: true, required: false
     }
   }
 }
