@@ -35,6 +35,11 @@ preferences {
     input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
     input "sendTextMessage", "phone", title: "Phone number for text notifications.", required: false
   }
+  section("SmartApp Settings") {
+    icon title: "Choose an Icon", required: false
+    label title: "Assign a name", required: false
+    mode title: "Set for specific mode(s)", required: false
+  }
 }
 
 def installed() {
