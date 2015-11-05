@@ -35,20 +35,33 @@ def selectActions() {
         input "action", "enum", title: "Select an action to execute", options: actions
       }
     }
+    section("SmartApp Settings") {
+      icon title: "Choose an Icon", required: false
+      label title: "Assign a name", required: false
+      mode title: "Set for specific mode(s)", required: false
+    }
   }
 }
 
 def installed() {
-  log.debug "installed()"
   initialize()
 }
 
 def updated() {
-  log.debug "updated()"
   unsubscribe()
   initialize()
 }
 
 def initialize() {
-  log.debug "initialize()"
+  subscribe(location, changedLocationMode)
+  subscribe(app, appTouch)
 }
+
+def changedLocationMode(evt) {
+  location.helloHome?.execute(action)
+}
+
+def appTouch(evt) {
+  location.helloHome?.execute(action)
+}
+
