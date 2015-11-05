@@ -44,22 +44,19 @@ def updated() {
 }
 
 def initialize() {
-	subscribe(thermostat, "heatingSetpoint", heatingSetpointHandler)
-	subscribe(thermostat, "coolingSetpoint", coolingSetpointHandler)
-	subscribe(thermostat, "temperature", temperatureHandler)
 	subscribe(location, changedLocationMode)
 	subscribe(app, appTouch)
 }
 
 def changedLocationMode(evt) {
-	setAThermostat()
+	setThermostat()
 }
 
 def appTouch(evt) {
-	setAThermostat()
+	setThermostat()
 }
 
-def setAThermostat() {
+def setThermostat() {
 	thermostat.setHeatingSetpoint(heatingSetpoint)
 	thermostat.setCoolingSetpoint(coolingSetpoint)
 	thermostat.poll()

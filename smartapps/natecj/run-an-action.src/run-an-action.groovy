@@ -37,7 +37,7 @@ def selectActions() {
     }
     section() {
       label title: "Assign a name", required: false
-      mode title: "Set for specific mode(s)", multiple: true, required: false
+      mode title: "Set for specific mode(s)", required: false
     }
   }
 }
@@ -57,13 +57,13 @@ def initialize() {
 }
 
 def changedLocationMode(evt) {
-  runAnAction()
+  runAction()
 }
 
 def appTouch(evt) {
-  runAnAction()
+  runAction()
 }
 
-def runAnAction() {
+def runAction() {
   location.helloHome?.execute(action)
 }
