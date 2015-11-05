@@ -13,73 +13,42 @@
  */
 
 definition(
-  name: "Multi Zone Mode Changer",
+  name: "Run an Action",
   namespace: "natecj",
   author: "Nathan Jacobson",
-  description: "Change modes based on one or more switches being 'on' in multiple zones.",
+  description: "Run an Action.",
   category: "Convenience",
   iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
   iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
 )
 
 preferences {
-	section("Zones"){
-    input "zone1switches", "capability.switch", title: "Upstairs Switches", multiple: true
-    input "zone2switches", "capability.switch", title: "Downstairs Switches", multiple: true
+  page(name: "selectActions")
+}
+
+def selectActions() {
+  dynamicPage(name: "selectActions", title: "Select Hello Home Action to Execute", install: true, uninstall: true) {
+    def actions = location.helloHome?.getPhrases()*.label
+    if (actions) {
+      actions.sort()
+      section("Hello Home Actions") {
+        input "action", "enum", title: "Select an action to execute", options: actions
+      }
+    }
   }
-	section("Modes") {
-	  input "modeAllOn", "mode", title: "All On", defaultValue: "Home"
-	  input "modeAllOff", "mode", title: "All Off", defaultValue: "Away"
-	  input "modeOnlyZone1", "mode", title: "Only Upstairs", defaultValue: "Night"
-	  input "modeOnlyZone2", "mode", title: "Only Downstairs", defaultValue: "Day"
-	}
 }
 
 def installed() {
+  log.debug "installed()"
   initialize()
 }
 
 def updated() {
+  log.debug "updated()"
   unsubscribe()
   initialize()
 }
 
 def initialize() {
-	subscribe(zone1switches, "switch", switchHandler)
-	subscribe(zone2switches, "switch", switchHandler)
-}
-
-def switchHandler(evt) {
-  def zone1on = zone1switches.any{ it.currentValue('switch') == 'on' }
-  def zone2on = zone2switches.any{ it.currentValue('switch') == 'on' }
-
-  if (zone1on && zone2on) {
-    setLocationMode(modeAllOn)
-    // Alarm: Disarmed
-    // Upstairs AC: Stay
-    // Downstairs AC: Stay
-    // Locks: front(lock), back(lock), basement(unlock)
-
-  } else if (!zone1on && !zone2on) {
-    setLocationMode(modeAllOff)
-    // Alarm: Armed Away
-    // Upstairs AC: Away
-    // Downstairs AC: Away
-    // Locks: front(lock), back(lock), basement(lock)
-
-  } else if (zone1on && !zone2on) {
-    setLocationMode(modeOnlyZone1)
-    // Alarm: Armed Stay
-    // Upstairs AC: Stay
-    // Downstairs AC: Away
-    // Locks: front(lock), back(lock), basement(lock)
-
-  } else if (!zone1on && zone2on) {
-    setLocationMode(modeOnlyZone2)
-    // Alarm: Disarmed
-    // Upstairs AC: Away
-    // Downstairs AC: Stay
-    // Locks: front(lock), back(lock), basement(unlock)
-
-  }
+  log.debug "initialize()"
 }
