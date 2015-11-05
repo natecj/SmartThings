@@ -18,8 +18,8 @@ definition(
   author: "Nathan Jacobson",
   description: "Get notifications for a variety of door lock events",
   category: "Safety & Security",
-  iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-  iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
+  iconUrl: "http://www.gharexpert.com/mid/4142010105208.jpg",
+  iconX2Url: "http://www.gharexpert.com/mid/4142010105208.jpg"
 )
 
 import groovy.json.JsonSlurper
