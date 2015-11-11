@@ -1,6 +1,5 @@
 /**
  *  User Lock Manager v4.0.7
- *  https://github.com/ethayer/user-lock-manager
  *
  *  Copyright 2015 Erik Thayer
  *
@@ -116,7 +115,7 @@ def userPage(params) {
           title = "Code (Must be ${lock.latestValue('pinLength')} digits)"
         }
       }
-      input(name: "userCode${i}", type: "number", title: title, required: false, defaultValue: settings."userCode${i}", refreshAfterSelection: true)
+      input(name: "userCode${i}", type: "text", title: title, required: false, defaultValue: settings."userCode${i}", refreshAfterSelection: true)
       input(name: "userSlot${i}", type: "number", title: "Slot (1 through 30)", defaultValue: preSlectedCode(i))
     }
     section {
