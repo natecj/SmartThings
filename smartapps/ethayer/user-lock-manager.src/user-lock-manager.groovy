@@ -419,17 +419,17 @@ def isUnique(newInt, oldInt) {
 
   def i = 0
   // Get a normalized sequence, at the same length
-  newInt.toList().collect {
+  newInt.toString().toList().collect {
     i++
-    if (i <= oldInt.length()) {
+    if (i <= oldInt.toString().length()) {
       newArray << normalizeNumber(it.toInteger())
     }
   }
 
   i = 0
-  oldInt.toList().collect {
+  oldInt.toString().toList().collect {
     i++
-    if (i <= newInt.length()) {
+    if (i <= newInt.toString().length()) {
       oldArray << normalizeNumber(it.toInteger())
     }
   }

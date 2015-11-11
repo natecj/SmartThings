@@ -51,10 +51,10 @@ def updated() {
 }
 
 def initialize() {
-	subscribe(person1upstairs, "switch", switchHandler)
-	subscribe(person1downstairs, "switch", switchHandler)
-	subscribe(person2upstairs, "switch", switchHandler)
-	subscribe(person2downstairs, "switch", switchHandler)
+  subscribe(person1upstairs, "switch", switchHandler)
+  subscribe(person1downstairs, "switch", switchHandler)
+  subscribe(person2upstairs, "switch", switchHandler)
+  subscribe(person2downstairs, "switch", switchHandler)
 }
 
 def switchHandler(evt) {
@@ -84,10 +84,8 @@ def updateMode() {
 }
 
 def updatePresence() {
-  def person1Active = (person1upstairs.currentValue('switch') == 'on'
-      || person1downstairs.currentValue('switch') == 'on')
-  def person2Active = (person2upstairs.currentValue('switch') == 'on'
-      || person2downstairs.currentValue('switch') == 'on')
+  def person1Active = (person1upstairs + person1downstairs).any{ it.currentValue('switch') == 'on' }
+  def person2Active = (person2upstairs + person2downstairs).any{ it.currentValue('switch') == 'on' }
 
   if (person1Active) {
     log.trace "updatePresence - Person 1 - Arrived"
