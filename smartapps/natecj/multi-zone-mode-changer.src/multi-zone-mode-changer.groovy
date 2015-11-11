@@ -69,12 +69,16 @@ def updateMode() {
   def downstairsActive = downstairsSwitches.any{ it.currentValue('switch') == 'on' }
 
   if (upstairsActive && downstairsActive) {
+    log.trace "updateMode - All On"
     setLocationMode(modeAllOn)
   } else if (!upstairsActive && !downstairsActive) {
+    log.trace "updateMode - All Off"
     setLocationMode(modeAllOff)
   } else if (upstairsActive && !downstairsActive) {
+    log.trace "updateMode - Upstairs Only"
     setLocationMode(modeOnlyUpstairs)
   } else if (!upstairsActive && downstairsActive) {
+    log.trace "updateMode - Downstairs Only"
     setLocationMode(modeOnlyDownstairs)
   }
 }
@@ -86,13 +90,17 @@ def updatePresence() {
       || person2downstairs.currentValue('switch') == 'on')
 
   if (person1Active) {
+    log.trace "updatePresence - Person 1 - Arrived"
     person1presence.arrived()
   } else {
+    log.trace "updatePresence - Person 1 - Departed"
     person1presence.departed()
   }
   if (person2Active) {
+    log.trace "updatePresence - Person 2 - Arrived"
     person2presence.arrived()
   } else {
+    log.trace "updatePresence - Person 2 - Departed"
     person2presence.departed()
   }
 }
