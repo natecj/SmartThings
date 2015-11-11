@@ -23,15 +23,21 @@ definition(
 )
 
 preferences {
-	section("Zones"){
-    input "zone1switches", "capability.switch", title: "Upstairs Switches", multiple: true
-    input "zone2switches", "capability.switch", title: "Downstairs Switches", multiple: true
+  section("Person 1"){
+    input "person1upstairs", "capability.switch", title: "Upstairs Switch", multiple: true
+    input "person1downstairs", "capability.switch", title: "Downstairs Switch", multiple: true
+    input "person1presence", "capability.presenceSensor", title: "Presence Sensor", multiple: true
+  }
+  section("Person 2"){
+    input "person2upstairs", "capability.switch", title: "Upstairs Switch", multiple: true
+    input "person2downstairs", "capability.switch", title: "Downstairs Switch", multiple: true
+    input "person2presence", "capability.presenceSensor", title: "Presence Sensor", multiple: true
   }
 	section("Modes") {
 	  input "modeAllOn", "mode", title: "All On", defaultValue: "Home"
 	  input "modeAllOff", "mode", title: "All Off", defaultValue: "Away"
-	  input "modeOnlyZone1", "mode", title: "Only Upstairs", defaultValue: "Night"
-	  input "modeOnlyZone2", "mode", title: "Only Downstairs", defaultValue: "Day"
+	  input "modeOnlyUpstairs", "mode", title: "Only Upstairs", defaultValue: "Night"
+	  input "modeOnlyDownstairs", "mode", title: "Only Downstairs", defaultValue: "Day"
 	}
 }
 
@@ -45,21 +51,48 @@ def updated() {
 }
 
 def initialize() {
-	subscribe(zone1switches, "switch", switchHandler)
-	subscribe(zone2switches, "switch", switchHandler)
+	subscribe(person1upstairs, "switch", switchHandler)
+	subscribe(person1downstairs, "switch", switchHandler)
+	subscribe(person2upstairs, "switch", switchHandler)
+	subscribe(person2downstairs, "switch", switchHandler)
 }
 
 def switchHandler(evt) {
-  def zone1on = zone1switches.any{ it.currentValue('switch') == 'on' }
-  def zone2on = zone2switches.any{ it.currentValue('switch') == 'on' }
+  updateMode()
+  updatePresence()
+}
 
-  if (zone1on && zone2on) {
+def updateMode() {
+  def upstairsSwitches = person1upstairs + person2upstairs
+  def upstairsActive = upstairsSwitches.any{ it.currentValue('switch') == 'on' }
+  def downstairsSwitches = person1downstairs + person2downstairs
+  def downstairsActive = downstairsSwitches.any{ it.currentValue('switch') == 'on' }
+
+  if (upstairsActive && downstairsActive) {
     setLocationMode(modeAllOn)
-  } else if (!zone1on && !zone2on) {
+  } else if (!upstairsActive && !downstairsActive) {
     setLocationMode(modeAllOff)
-  } else if (zone1on && !zone2on) {
-    setLocationMode(modeOnlyZone1)
-  } else if (!zone1on && zone2on) {
-    setLocationMode(modeOnlyZone2)
+  } else if (upstairsActive && !downstairsActive) {
+    setLocationMode(modeOnlyUpstairs)
+  } else if (!upstairsActive && downstairsActive) {
+    setLocationMode(modeOnlyDownstairs)
+  }
+}
+
+def updatePresence() {
+  def person1Active = (person1upstairs.currentValue('switch') == 'on'
+      || person1downstairs.currentValue('switch') == 'on')
+  def person2Active = (person2upstairs.currentValue('switch') == 'on'
+      || person2downstairs.currentValue('switch') == 'on')
+
+  if (person1Active) {
+    person1presence.present()
+  } else {
+    person1presence.away()
+  }
+  if (person2Active) {
+    person2presence.present()
+  } else {
+    person2presence.away()
   }
 }
