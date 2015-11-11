@@ -86,13 +86,13 @@ def updatePresence() {
       || person2downstairs.currentValue('switch') == 'on')
 
   if (person1Active) {
-    person1presence.present()
+    person1presence.arrived()
   } else {
-    person1presence.away()
+    person1presence.departed()
   }
   if (person2Active) {
-    person2presence.present()
+    person2presence.arrived()
   } else {
-    person2presence.away()
+    person2presence.departed()
   }
 }
