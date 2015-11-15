@@ -26,10 +26,10 @@ preferences {
 	section("Choose thermostat... ") {
 		input "thermostat", "capability.thermostat"
 	}
-	section("Heat setting...") {
+	section("Heating setting...") {
 		input "heatingSetpoint", "number", title: "Degrees?"
 	}
-	section("Air conditioning setting..."){
+	section("Cooling setting..."){
 		input "coolingSetpoint", "number", title: "Degrees?"
 	}
 }
