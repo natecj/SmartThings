@@ -1856,21 +1856,20 @@ private def STATE() {
     //log.trace "state: ${state}"
 }
 
-def onAlarmSystemStatus(evt) {
-    LOG("onAlarmSystemStatus(${evt.value})")
-
-    String mode = evt.value
-    if (mode == "Away") {
+private def onAlarmSystemStatus(evt) {
+    LOG("Alarm System Status has been changed to '${evt.value}'")
+    String mode = evt.value.toLowerCase()
+    if (mode == "away") {
         armAway()
-    } else if (mode == "Stay") {
+    } else if (mode == "stay") {
         armStay()
-    } else if (mode == "Off") {
+    } else if (mode == "off") {
         disarm()
     }
 }
 
 private def setAlarmMode(name) {
-    log.trace "Setting alarm system status to \'${name}\'"
+    LOG("Alarm System Status will be set to '${name}'")
     def event = [
         name:           "alarmSystemStatus",
         value:          name,
