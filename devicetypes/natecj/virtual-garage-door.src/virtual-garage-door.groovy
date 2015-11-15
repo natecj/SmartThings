@@ -55,17 +55,19 @@ metadata {
 }
 
 def parse(String description) {
-	log.trace "parse($description)"
+  log.trace "parse($description)"
 }
 
 def open() {
-	sendEvent(name: "door", value: "opening")
+  log.trace "OPEN: ${device}"
+  sendEvent(name: "door", value: "opening")
   runIn(6, finishOpening)
 }
 
 def close() {
+  log.trace "CLOSE: ${device}"
   sendEvent(name: "door", value: "closing")
-	runIn(6, finishClosing)
+  runIn(6, finishClosing)
 }
 
 def on() {
