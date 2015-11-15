@@ -1,5 +1,5 @@
 /**
- *  Copyright 2015 Nathan Jacobson
+ *  Copyright 2015 SmartThings
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -12,7 +12,7 @@
  *
  */
 metadata {
-	definition (name: "Z-Wave Lamp Module", namespace: "natecj", author: "Nathan Jacobson") {
+	definition (name: "Z-Wave Lamp Module", namespace: "smartthings", author: "SmartThings") {
 		capability "Switch Level"
 		capability "Actuator"
 		capability "Indicator"
