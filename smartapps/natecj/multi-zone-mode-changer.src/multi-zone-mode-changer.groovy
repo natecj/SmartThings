@@ -76,16 +76,16 @@ def updateMode() {
   def downstairsActive = downstairsSwitches.any{ it.currentValue('switch') == 'on' }
 
   if (upstairsActive && downstairsActive) {
-    log.trace "updateMode - All On"
+    myDebug "updateMode - All On"
     setLocationMode(modeAllOn)
   } else if (!upstairsActive && !downstairsActive) {
-    log.trace "updateMode - All Off"
+    myDebug "updateMode - All Off"
     setLocationMode(modeAllOff)
   } else if (upstairsActive && !downstairsActive) {
-    log.trace "updateMode - Upstairs Only"
+    myDebug "updateMode - Upstairs Only"
     setLocationMode(modeOnlyUpstairs)
   } else if (!upstairsActive && downstairsActive) {
-    log.trace "updateMode - Downstairs Only"
+    myDebug "updateMode - Downstairs Only"
     setLocationMode(modeOnlyDownstairs)
   }
 }
@@ -97,29 +97,33 @@ def updatePresence() {
 
   if (person1presence) {
     if (person1Active) {
-      log.trace "updatePresence - Person 1 - Arrived"
+      myDebug "updatePresence - Person 1 - Arrived"
       person1presence.arrived()
     } else {
-      log.trace "updatePresence - Person 1 - Departed"
+      myDebug "updatePresence - Person 1 - Departed"
       person1presence.departed()
     }
   }
   if (person2presence) {
     if (person2Active) {
-      log.trace "updatePresence - Person 2 - Arrived"
+      myDebug "updatePresence - Person 2 - Arrived"
       person2presence.arrived()
     } else {
-      log.trace "updatePresence - Person 2 - Departed"
+      myDebug "updatePresence - Person 2 - Departed"
       person2presence.departed()
     }
   }
   if (person3presence) {
     if (person3Active) {
-      log.trace "updatePresence - Person 3 - Arrived"
+      myDebug "updatePresence - Person 3 - Arrived"
       person3presence.arrived()
     } else {
-      log.trace "updatePresence - Person 3 - Departed"
+      myDebug "updatePresence - Person 3 - Departed"
       person3presence.departed()
     }
   }
+}
+
+def myDebug(message) {
+  //log.debug message
 }
