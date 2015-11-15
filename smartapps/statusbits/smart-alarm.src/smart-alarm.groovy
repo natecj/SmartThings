@@ -1856,7 +1856,7 @@ private def STATE() {
     //log.trace "state: ${state}"
 }
 
-private def onAlarmSystemStatus(evt) {
+def onAlarmSystemStatus(evt) {
     LOG("Alarm System Status has been changed to '${evt.value}'")
     String mode = evt.value.toLowerCase()
     if (mode == "away") {
@@ -1868,7 +1868,7 @@ private def onAlarmSystemStatus(evt) {
     }
 }
 
-private def setAlarmMode(name) {
+def setAlarmMode(name) {
     LOG("Alarm System Status will be set to '${name}'")
     def event = [
         name:           "alarmSystemStatus",

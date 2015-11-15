@@ -57,13 +57,11 @@ def rootPage() {
 def thermostatPage(params) {
   dynamicPage(name:"thermostatPage") {
     def i = getThermostat(params);
-    def tdevice = settings."thermostatDevice${i}"
-    log.debug "Thermostat Device #${i}: ${tdevice}"
     section("Thermostat Schedule #${i}") {
-      input(name: "thermostatDevice${i}", type: "capability.thermostat", title: "Thermostat", required: false, defaultValue: settings."thermostatDevice${i}", refreshAfterSelection: true)
-      input(name: "thermostatHeatTemp${i}", type: "number", title: "Heat Point", required: false, defaultValue: settings."thermostatHeatTemp${i}", refreshAfterSelection: true)
-      input(name: "thermostatCoolTemp${i}", type: "number", title: "Cool Point", required: false, defaultValue: settings."thermostatCoolTemp${i}", refreshAfterSelection: true)
-      input(name: "thermostatModes${i}", type: "mode", title: "Modes", multiple: true, required: false, defaultValue: settings."thermostatModes${i}", refreshAfterSelection: true)
+      input(name: "thermostatDevice${i}", type: "capability.thermostat", title: "Thermostat", required: false, defaultValue: settings."thermostatDevice${i}")
+      input(name: "thermostatHeatTemp${i}", type: "number", title: "Heat Point", required: false, defaultValue: settings."thermostatHeatTemp${i}")
+      input(name: "thermostatCoolTemp${i}", type: "number", title: "Cool Point", required: false, defaultValue: settings."thermostatCoolTemp${i}")
+      input(name: "thermostatModes${i}", type: "mode", title: "Modes", multiple: true, required: false, defaultValue: settings."thermostatModes${i}")
     }
   }
 }
@@ -80,15 +78,33 @@ def updated() {
 
 def initialize() {
   log.debug "initialize()"
+  subscribe(location, changedLocationMode)
+}
+
+def changedLocationMode(evt) {
+  def mode = evt.value
+  log.debug "changedLocationMode(${mode})"
+  (1..scheduleCount).each { index->
+    if (settings."thermostatModes${index}"?.contains(mode)) {
+      def activeThermostat = settings."thermostatDevice${index}"
+      if (activeThermostat) {
+        if (settings."thermostatHeatTemp${index}") {
+          activeThermostat.setHeatingSetpoint(settings."thermostatHeatTemp${index}")
+        }
+        if (settings."thermostatCoolTemp${index}") {
+          activeThermostat.setCoolingSetpoint(settings."thermostatCoolTemp${index}")
+        }
+        activeThermostat.poll()
+        true
+      }
+    }
+  }
 }
 
 
 
 
-
 def thermostatHrefTitle(index) {
-  log.debug("thermostatHrefTitle(${index}): " + settings."thermostatDevice${index}".class)
-  if (settings."thermostatDevice${index}".class == "string") return index;
   if (settings."thermostatDevice${index}") {
     deviceLabel(settings."thermostatDevice${index}")
   } else {
@@ -97,15 +113,17 @@ def thermostatHrefTitle(index) {
 }
 
 def thermostatHrefDescription(index) {
-  //if (isThermostatConfigured(index)) {
-    def heatTemp = settings."thermostatHeatTemp${index}"
-    def coolTemp = settings."thermostatCoolTemp${index}"
-    def currentTemp = "XX"
-    def modes = settings."thermostatModes${index}"
-    "${modes} ${heatTemp} < ${currentTemp} < ${coolTemp} (${isThermostatConfigured(index) ? 'configured' : 'unconfigured'})"
-  //} else {
-  //  "Unconfigured"
-  //}
+  def description = ""
+  if (settings."thermostatModes${index}") {
+    description += ("" + settings."thermostatModes${index}") + " "
+  }
+  if (settings."thermostatHeatTemp${index}") {
+    description += "Low: " + settings."thermostatHeatTemp${index}" + " "
+  }
+  if (settings."thermostatCoolTemp${index}") {
+    description += "High: " + settings."thermostatCoolTemp${index}" + " "
+  }
+  description
 }
 
 def thermostatPageState(index) {
@@ -119,7 +137,11 @@ def isThermostatConfigured(index) {
 }
 
 def deviceLabel(device) {
-  device.label ?: device.name
+  try {
+    device.label ?: device.name
+  } catch(all) {
+    "Invalid Device"
+  }
 }
 
 def getThermostat(params) {
