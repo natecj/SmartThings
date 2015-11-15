@@ -52,6 +52,7 @@ def initialize() {
 }
 
 def changedLocationMode(evt) {
+  myDebug "changedLocationMode(): ${evt.value}"
   if (settings.activeModes?.contains(evt.value)) {
     setThermostatActive()
   } else if (settings.inactiveModes?.contains(evt.value)) {
@@ -60,13 +61,19 @@ def changedLocationMode(evt) {
 }
 
 def setThermostatActive() {
-  thermostat.setHeatingSetpoint(activeHeatingSetpoint)
-  thermostat.setCoolingSetpoint(activeCoolingSetpoint)
-  thermostat.poll()
+  myDebug "setThermostatActive()"
+  activeThermostat.setHeatingSetpoint(activeHeatingSetpoint)
+  activeThermostat.setCoolingSetpoint(activeCoolingSetpoint)
+  activeThermostat.poll()
 }
 
 def setThermostatInactive() {
-  thermostat.setHeatingSetpoint(inactiveHeatingSetpoint)
-  thermostat.setCoolingSetpoint(inactiveCoolingSetpoint)
-  thermostat.poll()
+  myDebug "setThermostatInactive()"
+  activeThermostat.setHeatingSetpoint(inactiveHeatingSetpoint)
+  activeThermostat.setCoolingSetpoint(inactiveCoolingSetpoint)
+  activeThermostat.poll()
+}
+
+def myDebug(message) {
+  log.debug message
 }
