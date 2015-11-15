@@ -116,3 +116,29 @@ private getState(String value) {
 		default: return value
 	}
 }
+
+// table#wireless_table tbody tr
+// First <td> is MAC (eg, xx:xx:xx:xx:6D:59)
+// Third <td> is Uptime String (maybe save to state.uptime)
+// For now ask for last 4 of MAC, in the future take IP and lookup MAC
+
+def request(destIp, destPort, body) {
+  def hosthex = convertIPtoHex(destIp)
+  def porthex = convertPortToHex(destPort)
+  device.deviceNetworkId = "$hosthex:$porthex"
+  def hubAction = new physicalgraph.device.HubAction(
+    	'method': 'GET',
+  		'path': "/",
+    	'body': body,
+    	'headers': [ HOST: "$destIp:$destPort" ]
+  )
+  hubAction
+}
+
+private String convertIPtoHex(ipAddress) {
+   ipAddress.tokenize( '.' ).collect {  String.format( '%02X', it.toInteger() ) }.join()
+}
+
+private String convertPortToHex(port) {
+	port.toString().format( '%04X', port.toInteger() )
+}
