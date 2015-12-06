@@ -88,14 +88,20 @@ def changedLocationMode(evt) {
     if (settings."thermostatModes${index}"?.contains(mode)) {
       def activeThermostat = settings."thermostatDevice${index}"
       if (activeThermostat) {
+        def changeTemp = false
         if (settings."thermostatHeatTemp${index}") {
-          activeThermostat.setHeatingSetpoint(settings."thermostatHeatTemp${index}")
+          log.debug("setHeatingSetpoint(" + settings."thermostatHeatTemp${index}" + ") for #${index}")
+          //activeThermostat.setHeatingSetpoint(settings."thermostatHeatTemp${index}")
+          changeTemp = true
         }
         if (settings."thermostatCoolTemp${index}") {
-          activeThermostat.setCoolingSetpoint(settings."thermostatCoolTemp${index}")
+          log.debug("setCoolingSetpoint(" + settings."thermostatCoolTemp${index}" + ") for #${index}")
+          //activeThermostat.setCoolingSetpoint(settings."thermostatCoolTemp${index}")
+          changeTemp = true
         }
-        activeThermostat.poll()
-        true
+        if (changeTemp) {
+          activeThermostat.poll()
+        }
       }
     }
   }
