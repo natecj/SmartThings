@@ -34,7 +34,7 @@ metadata {
 			state("present", label:'present', icon:"st.presence.tile.present", backgroundColor:"#53a7c0", action:"departed")
 		}
 		main "presence"
-		details "presence"
+		details(["presence"])
 	}
 }
 

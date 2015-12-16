@@ -14,19 +14,25 @@
  *
  */
 metadata {
-	definition (name: "SleepIQ Presence Sensor", namespace: "natecj", author: "Nathan Jacobson") {
-		capability "Presence Sensor"
-		capability "Sensor"
-		capability "Polling"
-	}
+  definition (name: "SleepIQ Presence Sensor", namespace: "natecj", author: "Nathan Jacobson") {
+    capability "Presence Sensor"
+    capability "Switch"
+    capability "Polling"
+
+    command "arrived"
+    command "departed"
+  }
 
   simulator {
-
+    status "present": "presence: present"
+    status "not present": "presence: not present"
+	status "on": "switch: on"
+    status "off": "switch: not off"
   }
 
   preferences {
-    section("SleepIQ Settings:") {
-      input("login", "text", title: "Username", description: "Your SleepIQ username (usually an email address)")
+    section("Account Settings:") {
+      input("login", "text", title: "Username", description: "Your SleepIQ username")
       input("password", "password", title: "Password", description: "Your SleepIQ password")
     }
     section("Bed Settings:") {
@@ -36,62 +42,61 @@ metadata {
   }
 
   tiles {
-		standardTile("presence", "device.presence", width: 2, height: 2, canChangeBackground: true) {
-			state("present", labelIcon:"st.presence.tile.mobile-present", backgroundColor:"#53a7c0")
-			state("not present", labelIcon:"st.presence.tile.mobile-not-present", backgroundColor:"#ffffff")
-		}
-    standardTile("refresh", "device.poll", inactiveLabel: false, decoration: "flat") {
-        state "default", action:"polling.poll", icon:"st.secondary.refresh"
+    standardTile("presence", "device.presence", width: 2, height: 2, canChangeBackground: true) {
+      state("not present", label:'not present', icon:"st.presence.tile.not-present", backgroundColor:"#ffffff", action:"arrived")
+	  state("present", label:'present', icon:"st.presence.tile.present", backgroundColor:"#53a7c0", action:"departed")
     }
-
+    standardTile("refresh", "device.poll", inactiveLabel: false, decoration: "flat") {
+      state "default", action:"polling.poll", icon:"st.secondary.refresh"
+    }
     main "presence"
     details(["presence", "refresh"])
   }
 }
 
 def installed() {
-  log.info('installed()')
-  state.presence = false
-  state.session_key = ''
-  state.cookies = ''
+  log.trace 'installed()'
 }
 
 def updated() {
-  log.info('updated()')
-  state.presence = false
-  state.session_key = ''
-  state.cookies = ''
+  log.trace 'updated()'
 }
 
-// parse events into attributes
 def parse(String description) {
-  log.info('parse() - $description')
-	def value = parseValue(description)
-	def linkText = getLinkText(device)
-	def descriptionText = parseDescriptionText(linkText, value, description)
-	def handlerName = getState(value)
-	def isStateChange = isStateChange(device, name, value)
-
-	def results = [
-		name: "presence",
-		value: value,
-		unit: null,
-		linkText: linkText,
-		descriptionText: descriptionText,
-		handlerName: handlerName,
-		isStateChange: isStateChange,
-		displayed: displayed(description, isStateChange)
-	]
-	log.debug "Parse returned $results.descriptionText"
-	return results
+  def results = []
+  def pair = description.split(":")
+  results = createEvent(name: pair[0].trim(), value: pair[1].trim())
+  //results = createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
+  log.debug "\"$description\" parsed to ${results.inspect()}"
+  results
 }
 
-// handle device commands
 def poll() {
-  doLogin()
+  log.trace "poll()"
+  if (state.session_key && state.cookies) {
+    doBedFamilyStatus()
+  } else {
+    doLogin()
+  }
 }
+
+def arrived() {
+  log.trace "arrived() - present, sleeping, closed, on"
+  sendEvent(name: "presence", value: "present")
+  sendEvent(name: "switch", value: "on")
+}
+
+def departed() {
+  log.trace "departed() - not present, not sleeping, open, off"
+  sendEvent(name: "presence", value: "not present")
+  sendEvent(name: "switch", value: "off")
+}
+
+
 
 def doLogin() {
+  log.trace "doLogin()"
+  
   def params = [
     uri: 'https://api.sleepiq.sleepnumber.com/rest/login',
     headers: [
@@ -100,30 +105,34 @@ def doLogin() {
       'DNT': '1',
       'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36',
     ],
-    body: '{"login":"' + login + '","password":"' + password + '"}='
+    body: '{"login":"' + settings.login + '","password":"' + settings.password + '"}='
   ]
-  log.debug "Making request: ${method}: ${params}"
+  state.session_key = ''
+  state.cookies = ''
   httpPut(params) { response -> doLoginComplete(response) }
 }
 
 def doLoginComplete(response) {
-  log.debug "Login Request was successful, $response.status"
-  log.debug "Login Response Headers: $response.headers"
-  log.debug "Login Response Data: $response.data"
-  state.session_key = $response.data.key
+  if (response.status != 200) {
+    log.error "doLoginComplete(): Request was unsuccessful: ($response.status) $response.data"
+    return
+  }
+  log.debug "doLoginComplete(): Request was successful: ($response.status) $response.data"
+
+  state.session_key = response.data.key
   state.cookies = ''
   response.getHeaders('Set-Cookie').each {
     String cookie = it.value.split(';')[0]
-    log.debug "Adding cookie to collection: $cookie"
     state.cookies = state.cookies + cookie + ';'
   }
-  log.debug "Login Cookies: $state.cookies"
   doBedFamilyStatus()
 }
 
 def doBedFamilyStatus() {
+  log.trace "doBedFamilyStatus()" + (state.cookies == '' ? " (No Cookies)" : " (Cookies)")
+  
   def params = [
-    uri: 'https://api.sleepiq.sleepnumber.com/rest/bed/familyStatus',
+    uri: 'https://api.sleepiq.sleepnumber.com/rest/bed/familyStatus?_k=' + state.session_key,
     headers: [
       'Content-Type': 'application/json;charset=UTF-8',
       'Host': 'api.sleepiq.sleepnumber.com',
@@ -131,36 +140,54 @@ def doBedFamilyStatus() {
       'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36',
       'Cookie': state.cookies,
     ],
-    body: ['_k': state.session_key]
   ]
-  log.debug "Making request: ${method}: ${params}"
-  httpGet(params) { response -> doBedFamilyStatusComplete(response) }
+  try {
+    httpGet(params) { response -> 
+      state.request_retry_count = null
+      doBedFamilyStatusComplete(response)
+    }
+  } catch(Exception e) {
+    if (!state.request_retry_count) state.request_retry_count = 0
+	state.request_retry_count += 1
+    if (state.request_retry_count < 2) {
+      log.debug "Bed Family Status Request failed, retrying"
+      doLogin()
+    } else {
+      log.error "Bed Family Status Request failed"
+    }
+  }
 }
 
 def doBedFamilyStatusComplete(response) {
-  log.debug "Status Request was successful, $response.status"
-  log.debug "Status Response Headers: $response.headers"
-  log.debug "Status Response Data: $response.data"
+  if (response.status != 200) {
+    log.error "doBedFamilyStatusComplete() Request was unsuccessful: ($response.status) $response.data"
+    return
+  }
+  log.debug "doBedFamilyStatusComplete() Request was successful: ($response.status) $response.data"
 
-  bed_status = $response.data.beds[bed_index]
-  bed_presence = false
-  if (bed_side == "Left") {
-    bed_presence = bed_status.leftSide.isInBed
-  } else if (bed_side == "Right") {
-    bed_presence = bed_status.leftSide.isInBed
-  } else if (bed_side == "Both") {
-    bed_presence = bed_status.leftSide.isInBed && bed_status.leftSide.isInBed
-  } else if (bed_side == "Either") {
-    bed_presence = bed_status.leftSide.isInBed || bed_status.leftSide.isInBed
-  } else {
-    log.error("Invalid Bed Side value '$bed_side'")
+  def bed_status = response.data.beds[(settings.bed_index - 1)]
+  def bed_presence = false
+  switch (settings.bed_side) {
+  	case "Left":
+      bed_presence = bed_status.leftSide.isInBed
+      break
+  	case "Right":
+      bed_presence = bed_status.rightSide.isInBed
+      break
+	case "Both":
+	  bed_presence = bed_status.leftSide.isInBed && bed_status.rightSide.isInBed
+      break
+	case "Either":
+	  bed_presence = bed_status.leftSide.isInBed || bed_status.rightSide.isInBed
+      break
+    default:
+      log.error("Invalid Bed Side value '$bed_side'")
+      return
   }
 
   if (bed_presence) {
-    log.debug "Bed Presence: $bed_side is yes/true/present"
-    parse("presence: 1")
+    arrived()
   } else {
-    log.debug "Bed Presence: $bed_side is no/false/not-present"
-    parse("presence: 0")
+    departed()
   }
 }
