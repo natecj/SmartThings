@@ -23,20 +23,21 @@ definition(
 )
 
 preferences {
+  section("Switches"){
+    input "upstairsSwitches", "capability.switch", title: "Upstairs", multiple: true, required: false
+    input "downstairsSwitches", "capability.switch", title: "Downstairs", multiple: true, required: false  
+  }
   section("Person 1"){
-    input "person1upstairs", "capability.switch", title: "Upstairs Switch", multiple: true, required: false
-    input "person1downstairs", "capability.switch", title: "Downstairs Switch", multiple: true, required: false
-    input "person1presence", "capability.presenceSensor", title: "Presence Sensor", multiple: true, required: false
+    input "person1presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
+    input "person1sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
   }
   section("Person 2"){
-    input "person2upstairs", "capability.switch", title: "Upstairs Switch", multiple: true, required: false
-    input "person2downstairs", "capability.switch", title: "Downstairs Switch", multiple: true, required: false
-    input "person2presence", "capability.presenceSensor", title: "Presence Sensor", multiple: true, required: false
+    input "person2presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
+    input "person2sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
   }
   section("Person 3"){
-    input "person3upstairs", "capability.switch", title: "Upstairs Switch", multiple: true, required: false
-    input "person3downstairs", "capability.switch", title: "Downstairs Switch", multiple: true, required: false
-    input "person3presence", "capability.presenceSensor", title: "Presence Sensor", multiple: true, required: false
+    input "person3presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
+    input "person3sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
   }
   section("Modes") {
     input "modeAllOn", "mode", title: "All Zones Active", defaultValue: "Home", required: false
@@ -56,24 +57,47 @@ def updated() {
 }
 
 def initialize() {
-  subscribe(person1upstairs, "switch", switchHandler)
-  subscribe(person1downstairs, "switch", switchHandler)
-  subscribe(person2upstairs, "switch", switchHandler)
-  subscribe(person2downstairs, "switch", switchHandler)
-  subscribe(person3upstairs, "switch", switchHandler)
-  subscribe(person3downstairs, "switch", switchHandler)
+  subscribe(upstairsSwitches, "switch", changeHandler)
+  subscribe(downstairsSwitches, "switch", changeHandler)
+  subscribe(person1presence, "presence", changeHandler)
+  subscribe(person1sleep, "presence", changeHandler)
+  subscribe(person2presence, "presence", changeHandler)
+  subscribe(person2sleep, "presence", changeHandler)
+  subscribe(person3presence, "presence", changeHandler)
+  subscribe(person3sleep, "presence", changeHandler)
 }
 
-def switchHandler(evt) {
+def person1SleepHandler(evt) {
+  if (person1presence.currentValue('presence') != 'present') {
+    person1presence.arrived()
+  }
+  if (evt.value == "present") {
+
+  } else {
+  
+  }
   updateMode()
-  updatePresence()
+}
+
+def changeHandler(evt) {
+  updateMode()
 }
 
 def updateMode() {
-  def upstairsSwitches = person1upstairs + person2upstairs + person3upstairs
-  def upstairsActive = upstairsSwitches.any{ it.currentValue('switch') == 'on' }
-  def downstairsSwitches = person1downstairs + person2downstairs + person3downstairs
-  def downstairsActive = downstairsSwitches.any{ it.currentValue('switch') == 'on' }
+  def upstairsSwitchesActive = upstairsSwitches.any{ it.currentValue('switch') == 'on' }
+  def downstairsSwitchesActive = downstairsSwitches.any{ it.currentValue('switch') == 'on' }
+  
+  def upstairsPerson1Active = person1sleep.latestValue("presence") == "present"
+  def downstairsPerson1Active = person1presence.latestValue("presence") == "present"
+    
+  def upstairsPerson2Active = person2sleep.latestValue("presence") == "present"
+  def downstairsPerson2Active = person2presence.latestValue("presence") == "present"
+  
+  def upstairsPerson3Active = person3sleep.latestValue("presence") == "present"
+  def downstairsPerson3Active = person3presence.latestValue("presence") == "present"
+  
+  def upstairsActive = upstairsSwitchesActive || upstairsPerson1Active || upstairsPerson2Active || upstairsPerson3Active
+  def downstairsActive = downstairsSwitchesActive || downstairsPerson1Active || downstairsPerson2Active || downstairsPerson3Active
 
   if (upstairsActive && downstairsActive) {
     myDebug "updateMode - All On"
@@ -87,40 +111,6 @@ def updateMode() {
   } else if (!upstairsActive && downstairsActive) {
     myDebug "updateMode - Downstairs Only"
     setLocationMode(modeOnlyDownstairs)
-  }
-}
-
-def updatePresence() {
-  def person1Active = (person1upstairs + person1downstairs).any{ it.currentValue('switch') == 'on' }
-  def person2Active = (person2upstairs + person2downstairs).any{ it.currentValue('switch') == 'on' }
-  def person3Active = (person3upstairs + person3downstairs).any{ it.currentValue('switch') == 'on' }
-
-  if (person1presence) {
-    if (person1Active) {
-      myDebug "updatePresence - Person 1 - Arrived"
-      person1presence.arrived()
-    } else {
-      myDebug "updatePresence - Person 1 - Departed"
-      person1presence.departed()
-    }
-  }
-  if (person2presence) {
-    if (person2Active) {
-      myDebug "updatePresence - Person 2 - Arrived"
-      person2presence.arrived()
-    } else {
-      myDebug "updatePresence - Person 2 - Departed"
-      person2presence.departed()
-    }
-  }
-  if (person3presence) {
-    if (person3Active) {
-      myDebug "updatePresence - Person 3 - Arrived"
-      person3presence.arrived()
-    } else {
-      myDebug "updatePresence - Person 3 - Departed"
-      person3presence.departed()
-    }
   }
 }
 
