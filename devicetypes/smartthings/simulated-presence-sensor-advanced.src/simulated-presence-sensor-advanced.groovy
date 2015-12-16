@@ -13,7 +13,7 @@
  */
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Simulated Presence Sensor v2", namespace: "smartthings", author: "SmartThings") {
+	definition (name: "Simulated Presence Sensor Advanced", namespace: "smartthings", author: "SmartThings") {
 		capability "Presence Sensor"
 		capability "Switch"
 
