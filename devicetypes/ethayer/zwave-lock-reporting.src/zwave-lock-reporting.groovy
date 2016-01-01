@@ -86,22 +86,17 @@ def parse(String description) {
   } else {
     def cmd = zwave.parse(description, [ 0x98: 1, 0x72: 2, 0x85: 2, 0x86: 1 ])
     if (cmd) {
-      def result = null
-      result = zwaveEvent(cmd)
+      def result = zwaveEvent(cmd)
       if (result instanceof Collection) { results = results + result } else { results << result }
-      if (result.name == "lock") {
-        if (result.value == "locked") {
-          result = createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
-          if (result instanceof Collection) { results = results + result } else { results << result }
-          result = createEvent(name: "switch", value: "off", descriptionText: "$device.displayName is off")
-          if (result instanceof Collection) { results = results + result } else { results << result }
-        } else {
-      	  result = createEvent(name: "contact", value: "open", descriptionText: "$device.displayName is open")
-          if (result instanceof Collection) { results = results + result } else { results << result }
-          result = createEvent(name: "switch", value: "on", descriptionText: "$device.displayName is on")
-          if (result instanceof Collection) { results = results + result } else { results << result }
-        }
+      
+      if (results.any{ it.name == "lock" && it.value == "locked" }.size > 0) {
+        results << createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
+        results << createEvent(name: "switch", value: "off", descriptionText: "$device.displayName is off")
+      } else if (results.any{ it.name == "lock" && it.value == "unlocked" }.size > 0) {
+        results << createEvent(name: "contact", value: "open", descriptionText: "$device.displayName is open")
+        results << createEvent(name: "switch", value: "on", descriptionText: "$device.displayName is on")
       }
+      
     }
   }
   log.debug "\"$description\" parsed to ${results.inspect()}"

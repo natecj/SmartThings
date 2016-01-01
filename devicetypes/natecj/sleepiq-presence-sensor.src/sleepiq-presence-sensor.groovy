@@ -36,8 +36,8 @@ metadata {
       input("password", "password", title: "Password", description: "Your SleepIQ password")
     }
     section("Bed Settings:") {
-      input("bed_index", title: "Bed", "number", required: true, defaultValue: "1", description: "Which bed number is this?")
-      input("bed_side", title: "Side", "enum", multiple: false, required: true, defaultValue: "Both", options: ["Left", "Right", "Both", "Either"], description: "The side(s) of the bed to monitor")
+      input("bed_index", title: "Bed", "number", required: true, defaultValue: "1", description: "Which bed number is this? (first bed is 1)")
+      input("bed_side", title: "Side", "enum", required: true, defaultValue: "Either", options: ["Left", "Right", "Both", "Either"], description: "The side(s) of the bed to monitor")
     }
   }
 
@@ -80,16 +80,27 @@ def poll() {
   }
 }
 
+// handle commands
 def arrived() {
-  log.trace "arrived() - present, sleeping, closed, on"
+  log.trace "arrived()"
   sendEvent(name: "presence", value: "present")
   sendEvent(name: "switch", value: "on")
 }
 
 def departed() {
-  log.trace "departed() - not present, not sleeping, open, off"
+  log.trace "departed()"
   sendEvent(name: "presence", value: "not present")
   sendEvent(name: "switch", value: "off")
+}
+
+def on() {
+  log.trace "on()"
+  arrived()
+}
+
+def off() {
+  log.trace "off()"
+  departed()
 }
 
 
@@ -129,7 +140,7 @@ def doLoginComplete(response) {
 }
 
 def doBedFamilyStatus() {
-  log.trace "doBedFamilyStatus()" + (state.cookies == '' ? " (No Cookies)" : " (Cookies)")
+  log.trace "doBedFamilyStatus() - $state.cookies"
   
   def params = [
     uri: 'https://api.sleepiq.sleepnumber.com/rest/bed/familyStatus?_k=' + state.session_key,
