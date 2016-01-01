@@ -48,7 +48,7 @@ def copyConfig() {
     if (!state.accessToken) {
         createAccessToken()
     }
-    dynamicPage(name: "copyConfig", title: "Config", install:true) {
+    dynamicPage(name: "copyConfig", title: "Config", install:true, uninstall:true) {
         section("Select devices to include in the /devices API call") {
             input "switches", "capability.switch", title: "Switches", multiple: true, required: false
             input "hues", "capability.colorControl", title: "Hues", multiple: true, required: false
