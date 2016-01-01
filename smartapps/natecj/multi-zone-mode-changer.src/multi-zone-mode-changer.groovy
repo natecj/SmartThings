@@ -23,27 +23,81 @@ definition(
 )
 
 preferences {
-  section("Switches"){
-    input "upstairsSwitches", "capability.switch", title: "Upstairs", multiple: true, required: false
-    input "downstairsSwitches", "capability.switch", title: "Downstairs", multiple: true, required: false  
+  page name: "pageRoot"
+  page name: "pageSwitches"
+  page name: "pagePeople"
+  page name: "pageModes"
+  page name: "pageRoutines"
+}
+
+def pageRoot() {
+  dynamicPage(name: "pageRoot", install: true, uninstall: true) {
+    section {
+      href "pageSwitches", title:"Configure Switches", description:"Tap to open"
+      href "pagePeople", title:"Configure People", description:"Tap to open"
+      href "pageModes", title:"Configure Modes", description:"Tap to open"
+      href "pageRoutines", title:"Configure Routines", description:"Tap to open"
+    }
+    section {
+      label title: "Assign a name", required: false
+      mode title: "Set for specific mode(s)", required: false
+    }
   }
-  section("Person 1"){
-    input "person1presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
-    input "person1sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
+}
+
+def pageSwitches() {
+  dynamicPage(name: "pageSwitches") {
+    section("Zones") {
+      paragraph "If a device in a given zone is on, then the zone is active"
+      input "upstairsSwitches", "capability.switch", title: "Upstairs", multiple: true, required: false
+      input "downstairsSwitches", "capability.switch", title: "Downstairs", multiple: true, required: false
+    }
+    section("Status") {
+      paragraph "If set, these switches are turned on/off based on each zone being active"
+      input "upstairsStatus", "capability.switch", title: "Upstairs", multiple: false, required: false
+      input "downstairsStatus", "capability.switch", title: "Downstairs", multiple: false, required: false
+    }
   }
-  section("Person 2"){
-    input "person2presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
-    input "person2sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
+}
+
+def pagePeople() {
+  dynamicPage(name: "pagePeople") {
+    section("Person 1"){
+      input "person1presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
+      input "person1sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
+    }
+    section("Person 2"){
+      input "person2presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
+      input "person2sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
+    }
+    section("Person 3"){
+      input "person3presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
+      input "person3sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
+    }
   }
-  section("Person 3"){
-    input "person3presence", "capability.presenceSensor", title: "Presence Sensor", multiple: false, required: false
-    input "person3sleep", "capability.presenceSensor", title: "Sleep Sensor", multiple: false, required: false
+}
+
+def pageModes() {
+  dynamicPage(name: "pageModes") {
+    section {
+      input "modeHome", "mode", title: "All Zones Active (Home)", defaultValue: "Home", required: false
+      input "modeAway", "mode", title: "No Zones Active (Away)", defaultValue: "Away", required: false    
+      input "modeNight", "mode", title: "Upstairs Active (Night)", defaultValue: "Night", required: false
+      input "modeDay", "mode", title: "Downstairs Active (Day)", defaultValue: "Day", required: false
+    }
   }
-  section("Modes") {
-    input "modeAllOn", "mode", title: "All Zones Active", defaultValue: "Home", required: false
-    input "modeAllOff", "mode", title: "All Zones Inactive", defaultValue: "Away", required: false
-    input "modeOnlyUpstairs", "mode", title: "Only Upstairs", defaultValue: "Night", required: false
-    input "modeOnlyDownstairs", "mode", title: "Only Downstairs", defaultValue: "Day", required: false
+}
+
+def pageRoutines() {
+  dynamicPage(name: "pageRoutines") {
+    def actions = [""] + location.helloHome?.getPhrases()*.label?.sort()
+    section {
+      paragraph "Run the specified routine when the mode changes based on the following rules"
+      input "routineToNight", "enum", title: "Good Night (* to Night)", options: actions, required: false
+      input "routineToAway", "enum", title: "Goodbye (* to Away)", options: actions, required: false
+      input "routineFromNight", "enum", title: "Good Morning (Night to *)", options: actions, required: false
+      input "routineFromAway", "enum", title: "I'm Back (Away to *)", options: actions, required: false      
+    }
   }
 }
 
@@ -53,7 +107,9 @@ def installed() {
 
 def updated() {
   unsubscribe()
+  unschedule()
   initialize()
+  changeHandler()
 }
 
 def initialize() {
@@ -67,53 +123,106 @@ def initialize() {
   subscribe(person3sleep, "presence", changeHandler)
 }
 
-def person1SleepHandler(evt) {
-  if (person1presence.currentValue('presence') != 'present') {
-    person1presence.arrived()
-  }
-  if (evt.value == "present") {
-
-  } else {
-  
-  }
-  updateMode()
+def myDebug(message) {
+  log.debug message
 }
 
 def changeHandler(evt) {
-  updateMode()
+  if (state.is_running) {
+    unschedule()
+    state.is_running = false
+  }
+  def oldMode = location.mode
+  def newMode = getNewMode()
+  myDebug "changeHandler() - Current Mode: $location.mode"
+  if (oldMode == newMode) {
+    return
+  }
+  myDebug "changeHandler() - New Mode: $newMode"
+  
+  state.is_running = true
+  runIn(300, changeHandlerComplete)
 }
 
-def updateMode() {
-  def upstairsSwitchesActive = upstairsSwitches.any{ it.currentValue('switch') == 'on' }
-  def downstairsSwitchesActive = downstairsSwitches.any{ it.currentValue('switch') == 'on' }
-  
-  def upstairsPerson1Active = person1sleep.latestValue("presence") == "present"
-  def downstairsPerson1Active = person1presence.latestValue("presence") == "present"
-    
-  def upstairsPerson2Active = person2sleep.latestValue("presence") == "present"
-  def downstairsPerson2Active = person2presence.latestValue("presence") == "present"
-  
-  def upstairsPerson3Active = person3sleep.latestValue("presence") == "present"
-  def downstairsPerson3Active = person3presence.latestValue("presence") == "present"
-  
-  def upstairsActive = upstairsSwitchesActive || upstairsPerson1Active || upstairsPerson2Active || upstairsPerson3Active
-  def downstairsActive = downstairsSwitchesActive || downstairsPerson1Active || downstairsPerson2Active || downstairsPerson3Active
+def changeHandlerComplete() {
+  def oldMode = location.mode
+  def newMode = getNewMode()
+  myDebug "changeHandlerComplete() - Current Mode: $location.mode"
+  if (oldMode == newMode) {
+    state.is_running = false
+    return
+  }
+  myDebug "changeHandlerComplete() - New Mode: $newMode"
 
-  if (upstairsActive && downstairsActive) {
-    myDebug "updateMode - All On"
-    setLocationMode(modeAllOn)
-  } else if (!upstairsActive && !downstairsActive) {
-    myDebug "updateMode - All Off"
-    setLocationMode(modeAllOff)
-  } else if (upstairsActive && !downstairsActive) {
-    myDebug "updateMode - Upstairs Only"
-    setLocationMode(modeOnlyUpstairs)
-  } else if (!upstairsActive && downstairsActive) {
-    myDebug "updateMode - Downstairs Only"
-    setLocationMode(modeOnlyDownstairs)
+  setLocationMode(newMode)
+  runRoutine(oldMode, newMode)
+  updateStatus()
+  state.is_running = false
+}
+
+def updateStatus() {
+  if (upstairsStatus) {
+    if (upstairsActive()) {
+      upstairsStatus.on()
+    } else {
+      upstairsStatus.off()
+    }
+  }
+  if (downstairsStatus) {
+    if (downstairsActive()) {
+      downstairsStatus.on()
+    } else {
+      downstairsStatus.off()
+    }
   }
 }
 
-def myDebug(message) {
-  //log.debug message
+def runRoutine(oldMode, newMode) {
+  if (newMode == modeAway) { // * -> Away
+    location.helloHome?.execute(routineToAway)
+  } else if (newMode == modeNight) { // * -> Night
+    location.helloHome?.execute(routineToNight)
+  } else { // * -> Day or Home
+    if (oldMode == modeAway) { // Away -> *
+      location.helloHome?.execute(routineFromAway)
+    } else if (oldMode == modeNight) { // Night -> *
+      location.helloHome?.execute(routineFromNight)
+    }
+  }
+}
+
+def getNewMode() {
+  def newMode = location.mode
+  if (upstairsActive() && downstairsActive() && modeHome) {
+    newMode = modeHome
+  } else if (!upstairsActive() && !downstairsActive() && modeAway) {
+    newMode = modeAway
+  } else if (upstairsActive() && !downstairsActive() && modeNight) {
+    newMode = modeNight
+  } else if (!upstairsActive() && downstairsActive() && modeDay) {
+    newMode = modeDay
+  } else {
+  }
+  newMode
+}
+
+def upstairsActive() {
+  def upstairsSwitchesActive = settings.upstairsSwitches.any{ it.currentValue('switch') == 'on' }
+  def upstairsPerson1Active = settings.person1sleep.latestValue("presence") == "present"
+  def upstairsPerson2Active = settings.person2sleep.latestValue("presence") == "present"
+  def upstairsPerson3Active = settings.person3sleep.latestValue("presence") == "present"
+  def upstairsActive = upstairsSwitchesActive || upstairsPerson1Active || upstairsPerson2Active || upstairsPerson3Active
+  upstairsActive
+}
+
+def downstairsActive() {
+  def downstairsSwitchesActive = settings.downstairsSwitches.any{ it.currentValue('switch') == 'on' }
+  def upstairsPerson1Active = settings.person1sleep.latestValue("presence") == "present"
+  def downstairsPerson1Active = !upstairsPerson1Active && (settings.person1presence.latestValue("presence") == "present")
+  def upstairsPerson2Active = settings.person2sleep.latestValue("presence") == "present"
+  def downstairsPerson2Active = !upstairsPerson2Active && (settings.person2presence.latestValue("presence") == "present")
+  def upstairsPerson3Active = settings.person3sleep.latestValue("presence") == "present"
+  def downstairsPerson3Active = !upstairsPerson2Active && (settings.person3presence.latestValue("presence") == "present")
+  def downstairsActive = downstairsSwitchesActive || downstairsPerson1Active || downstairsPerson2Active || downstairsPerson3Active
+  downstairsActive
 }
