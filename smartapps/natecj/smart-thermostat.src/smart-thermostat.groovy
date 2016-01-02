@@ -16,7 +16,7 @@ definition(
   name: "Smart Thermostat",
   namespace: "natecj",
   author: "Nathan Jacobson",
-  description: "Control multiple Thermostat's heating and cooling settings between active and inactive depending on what mode is set.",
+  description: "Control multiple Thermostat's heating and cooling settings based on the current mode.",
   category: "Convenience",
   iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
   iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
@@ -29,7 +29,8 @@ preferences {
 
 def rootPage() {
   dynamicPage(name: "rootPage", title: "", install: true, uninstall: true) {
-    section("How many Thermostat Schedules?") {
+    section("How many Schedules?") {
+      paragraph "A schedule is a heat & cool setpoint for a single thermostat which is applied for the selected mode(s)"
       input name: "scheduleCount", title: "Number of Schedules", type: "number", multiple: false, required: true, submitOnChange: true
     }
     if (scheduleCount > 0) {
@@ -57,6 +58,9 @@ def rootPage() {
 def thermostatPage(params) {
   dynamicPage(name:"thermostatPage") {
     def i = getThermostat(params);
+    log.debug "Params: $params"
+    log.debug "i: $i"
+    log.debug "thermostatDevice$i: " + settings."thermostatDevice$i"
     section("Thermostat Schedule #${i}") {
       input(name: "thermostatDevice${i}", type: "capability.thermostat", title: "Thermostat", required: false, defaultValue: settings."thermostatDevice${i}")
       input(name: "thermostatHeatTemp${i}", type: "number", title: "Heat Point", required: false, defaultValue: settings."thermostatHeatTemp${i}")

@@ -45,6 +45,7 @@ def installed() {
 def updated() {
   unsubscribe()
   initialize()
+  setThermostatMode(location.currentMode)
 }
 
 def initialize() {
@@ -52,10 +53,14 @@ def initialize() {
 }
 
 def changedLocationMode(evt) {
-  myDebug "changedLocationMode(): ${evt.value}"
-  if (settings.activeModes?.contains(evt.value)) {
+  setThermostatMode(evt.value)
+}
+
+def setThermostatMode(mode) {
+  myDebug "setThermostatMode(): ${mode}"
+  if (settings.activeModes?.contains(mode)) {
     setThermostatActive()
-  } else if (settings.inactiveModes?.contains(evt.value)) {
+  } else if (settings.inactiveModes?.contains(mode)) {
     setThermostatInactive()
   }
 }
