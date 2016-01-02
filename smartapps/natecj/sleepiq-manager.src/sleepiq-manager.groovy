@@ -29,14 +29,14 @@ preferences {
 
 def rootPage() {
   log.trace "rootPage()"
+  
   def devices = state.devices
   def hrefState = devices ? "complete" : ""
   def hrefDescription = ""
   devices.each { deviceId, deviceName ->
     hrefDescription += "${deviceName}\n"
   }
-  log.debug "Devices? " + (devices ? "true" : "false")
-
+  
   dynamicPage(name: "rootPage", install: devices ? true : false, uninstall: true) {
     section {
       input("login", "text", title: "Username", description: "Your SleepIQ username", defaultValue: "natecj@gmail.com")
@@ -53,15 +53,20 @@ def rootPage() {
 
 def configurePage() {
   log.trace "configurePage()"
-  // get status and list beds (both/either/left/right) as choices to create as devices
-  // (preselect already existing devices)
-  log.debug "Login[$settings.login], Password[$settings.password]"
+
+  def responseData = getBedData()
+  log.debug "Beds: $responseData"
 
   dynamicPage(name: "configurePage") {
-    if (bedCount > 0) {
-      (1..bedCount).each { index->
-        section("Bed #$index") {
-          paragraph "Bed #$index"
+    if (responseData.beds.size() > 0) {
+      (1..responseData.beds.size()).each { index ->
+        def bed = responseData.beds[index]
+        settings.beds = settings.beds ?: [:]
+        section("Bed #$index ($bed)") {
+          input name: "beds[$index].both", type: "bool", title: "Both", defaultValue: settings.beds[index]?.both
+          input name: "beds[$index].either", type: "bool", title: "Either", defaultValue: settings.beds[index]?.either
+          input name: "beds[$index].left", type: "bool", title: "Left", defaultValue: settings.beds[index]?.left
+          input name: "beds[$index].right", type: "bool", title: "Right", defaultValue: settings.beds[index]?.right
         }
       }
     } else {
@@ -71,6 +76,9 @@ def configurePage() {
     }
   }
 }
+
+
+
 
 def installed() {
   log.trace "installed()"
@@ -86,7 +94,113 @@ def updated() {
 
 def initialize() {
   log.trace "initialize()"
-	// update data
-	// schedule polling
-	// schedule("* /15 * * * ?", "getDataFromWattvision") // every 15 minute
+  // update data
+  // schedule polling
+  // schedule("* /15 * * * ?", "getDataFromWattvision") // every 15 minute
 }
+
+
+
+
+
+
+
+
+
+
+def getBedData() {
+  state.requestData = null
+  doStatus()
+  while(state.requestData == null) { sleep(1000) }
+  def requestData = state.requestData
+  state.requestData = null
+  requestData
+}
+
+def ApiHost() { "api.sleepiq.sleepnumber.com" }
+
+def ApiUriBase() { "https://api.sleepiq.sleepnumber.com" }
+
+def ApiUserAgent() { "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36" }
+
+def ApiStatusParams() {
+  [
+    uri: ApiUriBase() + '/rest/bed/familyStatus?_k=' + state.session?.key,
+    headers: [
+      'Content-Type': 'application/json;charset=UTF-8',
+      'Host': ApiHost(),
+      'User-Agent': ApiUserAgent(),
+      'Cookie': state.session?.cookies,
+      'DNT': '1',
+    ],
+  ]
+}
+
+def doStatus() {
+  log.trace "doStatus()"
+
+  // Login if there isnt an active session
+  if (!state.session) {
+    doLogin()
+    return
+  }
+
+  // Make the request
+  try {
+    httpGet(ApiStatusParams()) { response -> 
+      if (response.status == 200) {
+        log.trace "doStatus() Success -  Request was successful: ($response.status) $response.data"
+        state.requestData = response.data
+      } else {
+        log.trace "doStatus() Failure - Request was unsuccessful: ($response.status) $response.data"
+        state.session = null
+        state.requestData = []
+      }
+    }
+  } catch(Exception e) {
+    log.error "doStatus() Error ($e)"
+    state.session = null
+    state.requestData = []
+  }
+}
+
+def ApiLoginParams() {
+  [
+    uri: ApiUriBase() + '/rest/login',
+    headers: [
+      'Content-Type': 'application/json;charset=UTF-8',
+      'Host': ApiHost(),
+      'User-Agent': ApiUserAgent(),
+      'DNT': '1',
+    ],
+    body: '{"login":"' + settings.login + '","password":"' + settings.password + '"}='
+  ]
+}
+
+def doLogin() {
+  log.trace "doLogin()"
+  state.session = null
+  try {
+    httpPut(ApiLoginParams()) { response ->
+      if (response.status == 200) {
+        log.trace "doLogin() Success - Request was successful: ($response.status) $response.data"
+        state.session = [:]
+        state.session.key = response.data.key
+        state.session.cookies = ''
+        response.getHeaders('Set-Cookie').each {
+          state.session.cookies = state.session.cookies + it.value.split(';')[0] + ';'
+        }
+        doStatus()
+      } else {
+        log.trace "doLogin() Failure - Request was unsuccessful: ($response.status) $response.data"
+        state.session = null
+        state.requestData = []
+      }
+    }
+  } catch(Exception e) {
+    log.error "doLogin() Error ($e)"
+    state.session = null
+    state.requestData = []
+  }
+}
+

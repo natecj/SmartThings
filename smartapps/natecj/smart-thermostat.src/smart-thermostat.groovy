@@ -58,11 +58,8 @@ def rootPage() {
 def thermostatPage(params) {
   dynamicPage(name:"thermostatPage") {
     def i = getThermostat(params);
-    log.debug "Params: $params"
-    log.debug "i: $i"
-    log.debug "thermostatDevice$i: " + settings."thermostatDevice$i"
     section("Thermostat Schedule #${i}") {
-      input(name: "thermostatDevice${i}", type: "capability.thermostat", title: "Thermostat", required: false, defaultValue: settings."thermostatDevice${i}")
+      input("thermostatDevice${i}", "capability.thermostat", title: "Thermostat", required: false, defaultValue: settings."thermostatDevice${i}")
       input(name: "thermostatHeatTemp${i}", type: "number", title: "Heat Point", required: false, defaultValue: settings."thermostatHeatTemp${i}")
       input(name: "thermostatCoolTemp${i}", type: "number", title: "Cool Point", required: false, defaultValue: settings."thermostatCoolTemp${i}")
       input(name: "thermostatModes${i}", type: "mode", title: "Modes", multiple: true, required: false, defaultValue: settings."thermostatModes${i}")
@@ -72,40 +69,50 @@ def thermostatPage(params) {
 
 
 def installed() {
+  log.trace "installed()"
   initialize()
 }
 
 def updated() {
+  log.trace "updated()"
   unsubscribe()
   initialize()
+  changeLocationMode(location.mode)
 }
 
 def initialize() {
-  log.debug "initialize()"
-  subscribe(location, changedLocationMode)
+  log.trace "initialize()"
+  subscribe(location, changedLocationHandler)
 }
 
-def changedLocationMode(evt) {
-  def mode = evt.value
-  log.debug "changedLocationMode(${mode})"
+def changedLocationHandler(evt) {
+  changeLocationMode(evt.value)
+}
+
+def changeLocationMode(mode) {
+  log.trace "changeLocationMode($mode)"
   (1..scheduleCount).each { index->
     if (settings."thermostatModes${index}"?.contains(mode)) {
       def activeThermostat = settings."thermostatDevice${index}"
       if (activeThermostat) {
-        def changeTemp = false
-        if (settings."thermostatHeatTemp${index}") {
-          log.debug("setHeatingSetpoint(" + settings."thermostatHeatTemp${index}" + ") for #${index}")
-          //activeThermostat.setHeatingSetpoint(settings."thermostatHeatTemp${index}")
-          changeTemp = true
-        }
-        if (settings."thermostatCoolTemp${index}") {
-          log.debug("setCoolingSetpoint(" + settings."thermostatCoolTemp${index}" + ") for #${index}")
-          //activeThermostat.setCoolingSetpoint(settings."thermostatCoolTemp${index}")
-          changeTemp = true
-        }
-        if (changeTemp) {
+
+        def oldHeat = activeThermostat.latestValue("heatingSetpoint")
+        def oldCool = activeThermostat.latestValue("coolingSetpoint")
+        def newHeat = settings."thermostatHeatTemp${index}" ?: oldHeat
+        def newCool = settings."thermostatCoolTemp${index}" ?: oldCool
+        if (oldHeat != newHeat || oldCool != newCool) {
+          if (oldHeat != newHeat) {
+            activeThermostat.setHeatingSetpoint(newHeat)
+          }
+          if (oldCool != newCool) {
+            activeThermostat.setCoolingSetpoint(newCool)
+          }
+          log.debug "[$activeThermostat] Changing $oldHeat / $oldCool to $newHeat / $newCool"
           activeThermostat.poll()
+        } else {
+          log.debug "[$activeThermostat] Already set to $newHeat / $newCool"
         }
+        
       }
     }
   }
