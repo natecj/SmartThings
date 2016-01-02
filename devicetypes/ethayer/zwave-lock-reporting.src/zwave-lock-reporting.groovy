@@ -91,7 +91,7 @@ def parse(String description) {
       
       def hasLockEvent = results.any{ it.hasProperty('name') && it.name == "lock" && it.value == "locked" }
       def hasUnlockEvent = results.any{ it.hasProperty('name') && it.name == "lock" && it.value == "unlocked" }
-      log.debug("Results parsed to ${results.inspect()}: " + (hasLockEvent ? "[Lock Event]" : "") + " " + (hasUnlockEvent ? "[Unlock Event]" : ""))
+      //log.debug("Results parsed to ${results.inspect()}: " + (hasLockEvent ? "[Lock Event]" : "") + " " + (hasUnlockEvent ? "[Unlock Event]" : ""))
       if (hasLockEvent) {
         results << createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
         results << createEvent(name: "switch", value: "off", descriptionText: "$device.displayName is off")
