@@ -851,6 +851,42 @@ def pageNotifications() {
 // Show "Remote Control Options" page
 def pageRemoteOptions() {
     LOG("pageRemoteOptions()")
+    
+    def helpSwitch =
+        "You can arm and disarm Smart Alarm using physical/virtual " +
+        "momentary buttons (for integration with other SmartApps)"
+        
+    def inputSwitchStay = [
+        name:       "switchesStay",
+        type:       "capability.switch",
+        title:      "Switch for Stay",
+        multiple:   false,
+        required:   false
+    ]
+    
+    def inputSwitchAway = [
+        name:       "switchesAway",
+        type:       "capability.switch",
+        title:      "Switch for Away",
+        multiple:   false,
+        required:   false
+    ]
+    
+    def inputSwitchDisarm = [
+        name:       "switchesDisarm",
+        type:       "capability.switch",
+        title:      "Switch for Disarm",
+        multiple:   false,
+        required:   false
+    ]
+    
+    def inputSwitchPanic = [
+        name:       "switchesPanic",
+        type:       "capability.switch",
+        title:      "Switch for Panic",
+        multiple:   false,
+        required:   false
+    ]
 
     def helpRemote =
         "You can arm and disarm Smart Alarm using any compatible remote " +
@@ -932,6 +968,14 @@ def pageRemoteOptions() {
     ]
 
     return dynamicPage(pageProperties) {
+        section("Button Control Options") {
+            paragraph helpSwitch
+            input inputSwitchStay
+            input inputSwitchAway
+            input inputSwitchDisarm
+            input inputSwitchPanic
+        }
+        
         section("Remote Control Options") {
             paragraph helpRemote
             input inputRemotes
@@ -1083,8 +1127,28 @@ private def initialize() {
     initRestApi()
     subscribe(location, onLocation)
     subscribe(location, "alarmSystemStatus", onAlarmSystemStatus)
+    subscribe(switchesStay, "switch.on", switchesStayHandler)
+    subscribe(switchesAway, "switch.on", switchesAwayHandler)
+    subscribe(switchesDisarm, "switch.on", switchesDisarmHandler)
+    subscribe(switchesPanic, "switch.on", switchesPanicHandler)
 
     STATE()
+}
+
+def switchesStayHandler(evt) {
+  armStay()
+}
+
+def switchesAwayHandler(evt) {
+  armAway()
+}
+
+def switchesDisarmHandler(evt) {
+  disarm()
+}
+
+def switchesPanicHandler(evt) {
+  panic()
 }
 
 private def clearAlarm() {
