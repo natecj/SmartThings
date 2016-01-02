@@ -89,10 +89,13 @@ def parse(String description) {
       def result = zwaveEvent(cmd)
       if (result instanceof Collection) { results = results + result } else { results << result }
       
-      if (results.any{ it.name == "lock" && it.value == "locked" }.size > 0) {
+      def hasLockEvent = results.any{ it.hasProperty('name') && it.name == "lock" && it.value == "locked" }
+      def hasUnlockEvent = results.any{ it.hasProperty('name') && it.name == "lock" && it.value == "unlocked" }
+      log.debug("Results parsed to ${results.inspect()}: " + (hasLockEvent ? "[Lock Event]" : "") + " " + (hasUnlockEvent ? "[Unlock Event]" : ""))
+      if (hasLockEvent) {
         results << createEvent(name: "contact", value: "closed", descriptionText: "$device.displayName is closed")
         results << createEvent(name: "switch", value: "off", descriptionText: "$device.displayName is off")
-      } else if (results.any{ it.name == "lock" && it.value == "unlocked" }.size > 0) {
+      } else if (hasUnlockEvent) {
         results << createEvent(name: "contact", value: "open", descriptionText: "$device.displayName is open")
         results << createEvent(name: "switch", value: "on", descriptionText: "$device.displayName is on")
       }
