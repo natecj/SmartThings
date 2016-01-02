@@ -39,7 +39,7 @@ def updated() {
 }
 
 def initialized() {
-  subscribe(switch, "switch.on", switchHandler)
+  subscribe(switches, "switch.on", switchHandler)
 }
 
 def switchHandler(evt) {
