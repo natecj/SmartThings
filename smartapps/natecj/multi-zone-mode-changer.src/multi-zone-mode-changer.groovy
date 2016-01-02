@@ -109,7 +109,7 @@ def updated() {
   unsubscribe()
   unschedule()
   initialize()
-  changeHandler()
+  runNow()
 }
 
 def initialize() {
@@ -128,31 +128,36 @@ def myDebug(message) {
 }
 
 def changeHandler(evt) {
+  runNow()
+}
+
+def runDelayed() {
   if (state.is_running) {
     unschedule()
     state.is_running = false
   }
   def oldMode = location.mode
   def newMode = getNewMode()
-  myDebug "changeHandler() - Current Mode: $location.mode"
   if (oldMode == newMode) {
+    myDebug "runDelayed() - Keep Mode as $oldMode"
     return
   }
-  myDebug "changeHandler() - New Mode: $newMode"
+  myDebug "runDelayed() - Change Mode from $oldMode to $newMode"
   
+  runIn(30, runNow)
+  updateStatus()
   state.is_running = true
-  runIn(300, changeHandlerComplete)
 }
 
-def changeHandlerComplete() {
+def runNow() {
   def oldMode = location.mode
   def newMode = getNewMode()
-  myDebug "changeHandlerComplete() - Current Mode: $location.mode"
   if (oldMode == newMode) {
     state.is_running = false
+    myDebug "runNow() - Keep Mode as $oldMode"
     return
   }
-  myDebug "changeHandlerComplete() - New Mode: $newMode"
+  myDebug "runNow() - Change Mode from $oldMode to $newMode"
 
   setLocationMode(newMode)
   runRoutine(oldMode, newMode)
@@ -178,15 +183,22 @@ def updateStatus() {
 }
 
 def runRoutine(oldMode, newMode) {
+  log.debug "[$oldMode -> $newMode]..."
   if (newMode == modeAway) { // * -> Away
+    log.debug "[$oldMode -> $newMode]... To Away"
     location.helloHome?.execute(routineToAway)
   } else if (newMode == modeNight) { // * -> Night
+    log.debug "[$oldMode -> $newMode]... To Night"
     location.helloHome?.execute(routineToNight)
   } else { // * -> Day or Home
     if (oldMode == modeAway) { // Away -> *
+      log.debug "[$oldMode -> $newMode]... From Away"
       location.helloHome?.execute(routineFromAway)
     } else if (oldMode == modeNight) { // Night -> *
+      log.debug "[$oldMode -> $newMode]... From Night"
       location.helloHome?.execute(routineFromNight)
+    } else {
+      log.debug "[$oldMode -> $newMode]... DO NOTHING"
     }
   }
 }
