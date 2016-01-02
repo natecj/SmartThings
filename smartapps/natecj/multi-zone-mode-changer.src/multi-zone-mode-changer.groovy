@@ -183,22 +183,15 @@ def updateStatus() {
 }
 
 def runRoutine(oldMode, newMode) {
-  log.debug "[$oldMode -> $newMode]..."
   if (newMode == modeAway) { // * -> Away
-    log.debug "[$oldMode -> $newMode]... To Away"
     location.helloHome?.execute(routineToAway)
   } else if (newMode == modeNight) { // * -> Night
-    log.debug "[$oldMode -> $newMode]... To Night"
     location.helloHome?.execute(routineToNight)
   } else { // * -> Day or Home
     if (oldMode == modeAway) { // Away -> *
-      log.debug "[$oldMode -> $newMode]... From Away"
       location.helloHome?.execute(routineFromAway)
     } else if (oldMode == modeNight) { // Night -> *
-      log.debug "[$oldMode -> $newMode]... From Night"
       location.helloHome?.execute(routineFromNight)
-    } else {
-      log.debug "[$oldMode -> $newMode]... DO NOTHING"
     }
   }
 }

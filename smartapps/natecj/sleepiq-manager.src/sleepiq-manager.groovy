@@ -23,31 +23,32 @@ definition(
 )
 
 preferences {
-	page name: "rootPage"
-	page name: "configurePage"
+  page name: "rootPage"
+  page name: "configurePage"
 }
 
 def rootPage() {
   log.trace "rootPage()"
-	def devices = state.devices
-	def hrefState = devices ? "complete" : ""
-	def hrefDescription = ""
-	devices.each { deviceId, deviceName ->
-		hrefDescription += "${deviceName}\n"
-	}
+  def devices = state.devices
+  def hrefState = devices ? "complete" : ""
+  def hrefDescription = ""
+  devices.each { deviceId, deviceName ->
+    hrefDescription += "${deviceName}\n"
+  }
+  log.debug "Devices? " + (devices ? "true" : "false")
 
-	dynamicPage(name: "rootPage", install: devices ? true : false, uninstall: true) {
-		section {
-      input("login", "text", title: "Username", description: "Your SleepIQ username")
-      input("password", "password", title: "Password", description: "Your SleepIQ password")
-			href(url: "configurePage", title: "Configure SleepIQ Devices", style: "embedded", description: hrefDescription, state: hrefState)
-			href(url: "https://sleepiq.sleepnumber.com/", title: "Learn More About SleepIQ", style: "external", description: null)
-		}
+  dynamicPage(name: "rootPage", install: devices ? true : false, uninstall: true) {
+    section {
+      input("login", "text", title: "Username", description: "Your SleepIQ username", defaultValue: "natecj@gmail.com")
+      input("password", "password", title: "Password", description: "Your SleepIQ password", defaultValue: "QqiQU9LzCr")
+      href("configurePage", title: "Configure SleepIQ Devices", description: hrefDescription, state: hrefState)
+      href(url: "https://sleepiq.sleepnumber.com/", title: "Learn More About SleepIQ", description: "https://sleepiq.sleepnumber.com/", style: "external")
+    }
     section {
       label title: "Assign a name", required: false
       mode title: "Set for specific mode(s)", required: false
     }
-	}
+  }
 }
 
 def configurePage() {
@@ -64,7 +65,9 @@ def configurePage() {
         }
       }
     } else {
-      paragraph "No Beds Found"
+      section {
+        paragraph "No Beds Found"
+      }
     }
   }
 }
@@ -87,5 +90,3 @@ def initialize() {
 	// schedule polling
 	// schedule("* /15 * * * ?", "getDataFromWattvision") // every 15 minute
 }
-
-
