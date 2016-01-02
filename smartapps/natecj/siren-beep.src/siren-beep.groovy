@@ -24,8 +24,8 @@ definition(
 
 preferences {
 	section {
-		input "siren", "capability.alarm", title: "Siren", required: true, multiple: true
-		input "switch", "capability.switch", title: "Switch", required: true, multiple: false
+		input "sirens", "capability.alarm", title: "Siren", required: true, multiple: true
+		input "switches", "capability.switch", title: "Switch", required: true, multiple: false
 	}
 }
 
@@ -43,7 +43,7 @@ def initialized() {
 }
 
 def switchHandler(evt) {
-  siren.siren()
-  switch.off()
-  siren.off()
+  sirens.siren()
+  switches.off()
+  sirens.off()
 }
