@@ -24,8 +24,8 @@ definition(
 
 preferences {
 	section {
-		input "siren", "capability.alarm", title: "Siren(s)", required: true, multiple: true
-		input "switch", "capability.switch", title: "Switch(s)", required: true, multiple: false
+		input "siren", "capability.alarm", title: "Siren", required: true, multiple: true
+		input "switch", "capability.switch", title: "Switch", required: true, multiple: false
 	}
 }
 
