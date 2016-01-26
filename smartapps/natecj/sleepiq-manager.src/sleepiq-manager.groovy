@@ -202,12 +202,16 @@ private def ApiUriBase() { "https://api.sleepiq.sleepnumber.com" }
 
 private def ApiUserAgent() { "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36" }
 
-private def doStatus() {
+private def doStatus(alreadyLoggedIn = false) {
   log.trace "doStatus()"
 
   // Login if there isnt an active session
-  if (!state.session) {
-    doLogin()
+  if (!state.session || !state.session?.key) {
+    if (alreadyLoggedIn) {
+      log.error "doStatus() Already attempted login, giving up for now"
+    } else {
+      doLogin()
+    }
     return
   }
 
@@ -235,14 +239,16 @@ private def doStatus() {
     }
   } catch(Exception e) {
     log.error "doStatus() Error ($e)"
-    state.session = null
-    state.requestData = [:]
+    if (!alreadyLoggedIn) {
+      doLogin(alreadyAttempted)
+    }
   }
 }
 
 private def doLogin() {
   log.trace "doLogin()"
   state.session = null
+  state.requestData = [:]
   try {
     def loginParams = [
       uri: ApiUriBase() + '/rest/login',
@@ -263,7 +269,7 @@ private def doLogin() {
         response.getHeaders('Set-Cookie').each {
           state.session.cookies = state.session.cookies + it.value.split(';')[0] + ';'
         }
-        doStatus()
+        doStatus(true)
       } else {
         log.trace "doLogin() Failure - Request was unsuccessful: ($response.status) $response.data"
         state.session = null
