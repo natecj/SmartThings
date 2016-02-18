@@ -238,9 +238,11 @@ private def doStatus(alreadyLoggedIn = false) {
       }
     }
   } catch(Exception e) {
-    log.error "doStatus() Error ($e)"
-    if (!alreadyLoggedIn) {
-      doLogin(alreadyAttempted)
+    if (alreadyLoggedIn) {
+      log.error "doStatus() Error ($e)"
+    } else {
+      log.trace "doStatus() Error ($e)"
+      doLogin()    
     }
   }
 }
