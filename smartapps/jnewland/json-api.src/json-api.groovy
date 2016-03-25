@@ -38,6 +38,8 @@ def initialize() {
     if (!state.accessToken) {
         createAccessToken()
     }
+    log.debug "Config URL: https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}"
+    log.debug "Devices URL: https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/devices?access_token=${state.accessToken}"
 }
 
 preferences {
@@ -115,8 +117,13 @@ def renderDevices() {
 }
 
 def deviceCommand() {
+  log.debug "deviceCommand(): Start"
   def device  = authorizedDevices()[params.type].find { it.id == params.id }
+  log.debug "deviceCommand(): Device: ${device}"
   def command = params.command
+  log.debug "deviceCommand(): Command: ${command}"
+  def value = params.value
+  log.debug "deviceCommand(): Value: ${value}"
   if (!device) {
       httpError(404, "Device not found")
   } else {
